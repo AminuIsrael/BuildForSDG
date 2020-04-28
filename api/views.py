@@ -34,6 +34,7 @@ def user_registration(request):
             "error": 2,
             "message": str(e)
         }
+    Response(return_data)
 
 
 

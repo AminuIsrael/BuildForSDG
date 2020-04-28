@@ -3,4 +3,5 @@ from api import views
 
 urlpatterns = [
     path('',views.index_page),
+    path('register',views.user_registration)
 ]

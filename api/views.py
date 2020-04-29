@@ -1,7 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
-from api.models import User
+from django_otp.oath import totp
+from api.models import User,OTP
 from CustomCode import string_generator,password_functions
 
 
@@ -45,10 +46,15 @@ def user_registration(request):
                                 user_password=encryped_password,user_address=address,
                                 user_state=state,user_LGA=lga,user_country=country)
                 new_userData.save()
+                #Generate OTP
+                code = string_generator.numeric(8)
+                #Save OTP
+                user_OTP = OTP(user=new_userData,otp_code=code)
                 return_data = {
                     "error": "0",
                     "message":"The registration was successful",
-                    "user_id": f"{userRandomId}"
+                    "user_id": f"{userRandomId}",
+                    "OTP_Code": f"{code}"
                 }
         else:
             return_data = {
@@ -58,9 +64,10 @@ def user_registration(request):
     except Exception as e:
         return_data = {
             "error": "3",
-            "message": str(e)
+            "message": "An Error Occured"
         }
     return Response(return_data)
+
     
 
 

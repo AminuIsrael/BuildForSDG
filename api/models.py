@@ -20,3 +20,13 @@ class User(models.Model):
     user_country = models.TextField(max_length=200,verbose_name="Country")
     date_added = models.DateTimeField(default=timezone.now)
 
+class OTP(models.Model):
+    class Meta:
+        db_table = "OTP_Code"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp_code = models.IntegerField(verbose_name="OTP",blank=False)
+    validated = models.BooleanField(default=False)
+    date_added = models.DateTimeField(default=timezone.now)
+    
+
+

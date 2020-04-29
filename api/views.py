@@ -1,7 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
-from django_otp.oath import totp
 from api.models import User,OTP
 from CustomCode import string_generator,password_functions
 

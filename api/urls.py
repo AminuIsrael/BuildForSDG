@@ -3,5 +3,6 @@ from api import views
 
 urlpatterns = [
     path('',views.index_page),
-    path('register',views.user_registration)
+    path('signup',views.user_registration),
+    path('signin',views.user_login)
 ]

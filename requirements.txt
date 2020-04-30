@@ -1,3 +1,5 @@
 Django==2.2.10 
 djangorestframework==3.9.1
 bcrypt==3.1.7 
+psycopg2==2.7.5
+django-heroku==0.3.1

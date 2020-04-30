@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
-from api.models import User,OTP
+from api.models import User,otp
 from CustomCode import string_generator,password_functions
 
 
@@ -48,7 +48,7 @@ def user_registration(request):
                 #Generate OTP
                 code = string_generator.numeric(8)
                 #Save OTP
-                user_OTP = OTP(user=new_userData,otp_code=code)
+                user_OTP =otp(user=new_userData,otp_code=code)
                 return_data = {
                     "error": "0",
                     "message":"The registration was successful",
@@ -67,6 +67,40 @@ def user_registration(request):
         }
     return Response(return_data)
 
-    
-
-
+@api_view(["POST"])
+def user_login(request):
+    try:
+        phone_number = request.data.get("phone_number")
+        password = request.data.get("password")
+        field = [phone_number,password]
+        if not None in field and not '' in field:
+            user_data = User.objects.get(user_phone=phone_number)
+            is_valid_password = password_functions.check_password_match(password,user_data.user_password)
+            is_verified = otp.objects.filter(user__user_phone=user_data.user_phone)
+            print(is_verified)
+            if is_valid_password and is_verified:
+                return_data = {
+                    "error" : "0",
+                    "message" : "Successfull, Redirecting"
+                }
+            elif is_verified == False:
+                return_data = {
+                    "error": "1",
+                    "message": "User is not verified,redirecting"
+                }
+            else:
+                return_data = {
+                    "error" : "1",
+                    "message" : "Wrong Phone Number or Password"
+                }
+        else:
+            return_data = {
+                    "error" : "2",
+                    "message" : "Invalid Parameters"
+                }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message":str(e)
+        }
+    return Response(return_data)

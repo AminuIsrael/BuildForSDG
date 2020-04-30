@@ -26,7 +26,9 @@ SECRET_KEY = 'c^1vtw$lxdxay*y&3p5du2o_+xv97fbmh4=f34#nc1u4^)sq)y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "*"
+]
 
 
 # Application definition
@@ -76,12 +78,26 @@ WSGI_APPLICATION = 'WasteCoins.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+if DEBUG == True:
+    DATABASES = {
+        'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+     }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'da498gg09sn4l2',
+        'USER': 'ojeyncmlnhjerr',
+        'PASSWORD': '43530d2e5b852d5e8173a3172da684ddab69cb390021899a04fa4212e61f913e',
+        'HOST' : 'ec2-46-137-156-205.eu-west-1.compute.amazonaws.com',
+        'PORT': '5432'
+            }
+        }
+
+
 
 
 # Password validation

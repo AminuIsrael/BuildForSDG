@@ -46,9 +46,10 @@ def user_registration(request):
                                 user_state=state,user_LGA=lga,user_country=country)
                 new_userData.save()
                 #Generate OTP
-                code = string_generator.numeric(8)
+                code = string_generator.numeric(6)
                 #Save OTP
                 user_OTP =otp(user=new_userData,otp_code=code)
+                user_OTP.save()
                 return_data = {
                     "error": "0",
                     "message":"The registration was successful",
@@ -74,33 +75,38 @@ def user_login(request):
         password = request.data.get("password")
         field = [phone_number,password]
         if not None in field and not '' in field:
-            user_data = User.objects.get(user_phone=phone_number)
-            is_valid_password = password_functions.check_password_match(password,user_data.user_password)
-            is_verified = otp.objects.filter(user__user_phone=user_data.user_phone)
-            print(is_verified)
-            if is_valid_password and is_verified:
-                return_data = {
-                    "error" : "0",
-                    "message" : "Successfull, Redirecting"
-                }
-            elif is_verified == False:
+            if User.objects.filter(user_phone =phone_number).exists() == False:
                 return_data = {
                     "error": "1",
-                    "message": "User is not verified,redirecting"
+                    "message": "User does not exist or Invalid Phone Number"
                 }
             else:
-                return_data = {
-                    "error" : "1",
-                    "message" : "Wrong Phone Number or Password"
-                }
+                user_data = User.objects.get(user_phone=phone_number)
+                is_valid_password = password_functions.check_password_match(password,user_data.user_password)
+                is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
+                if is_valid_password and is_verified:
+                    return_data = {
+                        "error": "0",
+                        "message": "Successfull"
+                    }
+                elif is_verified == False:
+                    return_data = {
+                        "error" : "1",
+                        "message": "User is not verified"
+                    }
+                else:
+                    return_data = {
+                        "error" : "1",
+                        "message" : "Wrong Password"
+                    }
         else:
             return_data = {
-                    "error" : "2",
-                    "message" : "Invalid Parameters"
+                "error" : "2",
+                "message" : "Invalid Parameters"
                 }
     except Exception as e:
         return_data = {
             "error": "3",
-            "message":str(e)
+            "message": "An error occured"
         }
     return Response(return_data)

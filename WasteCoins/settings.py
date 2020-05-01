@@ -78,14 +78,14 @@ WSGI_APPLICATION = 'WasteCoins.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-if DEBUG == True:
+if DEBUG == True:  #Use SQlite locally 
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
      }
     }
-else:
+else: #Use Postgress in Production
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.postgresql',

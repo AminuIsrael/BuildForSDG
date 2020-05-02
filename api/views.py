@@ -1,8 +1,9 @@
+from datetime import datetime,timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
 from api.models import User,otp
-from CustomCode import string_generator,password_functions
+from CustomCode import string_generator,password_functions,validator,autentication
 
 
 # Create your views here.
@@ -46,9 +47,10 @@ def user_registration(request):
                                 user_state=state,user_LGA=lga,user_country=country)
                 new_userData.save()
                 #Generate OTP
-                code = string_generator.numeric(8)
+                code = string_generator.numeric(6)
                 #Save OTP
                 user_OTP =otp(user=new_userData,otp_code=code)
+                user_OTP.save()
                 return_data = {
                     "error": "0",
                     "message":"The registration was successful",
@@ -68,39 +70,116 @@ def user_registration(request):
     return Response(return_data)
 
 @api_view(["POST"])
-def user_login(request):
+@autentication.user_tokenid
+def user_verification(request,user_id):
     try:
-        phone_number = request.data.get("phone_number")
-        password = request.data.get("password")
-        field = [phone_number,password]
-        if not None in field and not '' in field:
-            user_data = User.objects.get(user_phone=phone_number)
-            is_valid_password = password_functions.check_password_match(password,user_data.user_password)
-            is_verified = otp.objects.filter(user__user_phone=user_data.user_phone)
-            print(is_verified)
-            if is_valid_password and is_verified:
+        otp_entered = request.data.get("otp")
+        if otp_entered is not None and otp_entered is not "":
+            user_data = otp.objects.get(user__user_id=user_id)
+            otpCode,date_added = str(user_data.otp_code),user_data.date_added
+            date_now = datetime.now(timezone.utc)
+            duration = float((date_now - date_added).total_seconds())
+            timeLimit = 1800.0 #30 mins interval
+            if otp_entered == otpCode and duration < timeLimit:
+                #validate user
+                user_data.validated = True
+                user_data.save()
                 return_data = {
-                    "error" : "0",
-                    "message" : "Successfull, Redirecting"
+                    "error": "0",
+                    "message":"User Verified"
                 }
-            elif is_verified == False:
+            elif otp_entered != otpCode and duration < timeLimit:
                 return_data = {
                     "error": "1",
-                    "message": "User is not verified,redirecting"
+                    "message": "Incorrect OTP"
                 }
-            else:
+            elif otp_entered == otpCode and duration > timeLimit:
+                #We should generate another and send to the user here
+                newOTP = string_generator.numeric(6)
+                user_data.otp_code = newOTP
+                user_data.save()
                 return_data = {
-                    "error" : "1",
-                    "message" : "Wrong Phone Number or Password"
+                    "error": "1",
+                    "message": "OTP has expired"
                 }
         else:
             return_data = {
-                    "error" : "2",
-                    "message" : "Invalid Parameters"
+                "error": "2",
+                "message": "Invalid Parameters"
+            }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)
+
+@api_view(["POST"])
+def user_login(request):
+    try:
+        email_phone = request.data.get("email_phone")
+        password = request.data.get("password")
+        field = [email_phone,password]
+        if not None in field and not '' in field:
+            validate_mail = validator.checkmail(email_phone)
+            if validate_mail == True:
+                if User.objects.filter(email =email_phone).exists() == False:
+                    return_data = {
+                        "error": "1",
+                        "message": "User does not exist"
+                    }
+                else:
+                    user_data = User.objects.get(email=email_phone)
+                    is_valid_password = password_functions.check_password_match(password,user_data.user_password)
+                    is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
+                    if is_valid_password and is_verified:
+                        return_data = {
+                            "error": "0",
+                            "message": "Successfull"
+                            }
+                    elif is_verified == False:
+                        return_data = {
+                            "error" : "1",
+                            "message": "User is not verified"
+                        }
+                    else:
+                        return_data = {
+                            "error" : "1",
+                            "message" : "Wrong Password"
+                        }
+            else:
+                if User.objects.filter(user_phone =email_phone).exists() == False:
+                    return_data = {
+                        "error": "1",
+                        "message": "User does not exist"
+                    }
+                else:   
+                    user_data = User.objects.get(user_phone=email_phone)
+                    is_valid_password = password_functions.check_password_match(password,user_data.user_password)
+                    is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
+                    if is_valid_password and is_verified:
+                        return_data = {
+                            "error": "0",
+                            "message": "Successfull"
+                        }
+                    elif is_verified == False:
+                        return_data = {
+                            "error" : "1",
+                            "message": "User is not verified"
+                        }
+                    else:
+                        return_data = {
+                            "error" : "1",
+                            "message" : "Wrong Password"
+                        }
+        else:
+            return_data = {
+                "error" : "2",
+                "message" : "Invalid Parameters"
                 }
     except Exception as e:
         return_data = {
             "error": "3",
-            "message":str(e)
+            "message": str(e)
         }
     return Response(return_data)

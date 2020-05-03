@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'c^1vtw$lxdxay*y&3p5du2o_+xv97fbmh4=f34#nc1u4^)sq)y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "*"
@@ -75,10 +75,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'WasteCoins.wsgi.application'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mailtrap.io'
-EMAIL_HOST_USER = '9f1f826111fcf6'
-EMAIL_HOST_PASSWORD = 'bb7a3caae5d1b5'
-EMAIL_PORT = '2525'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = '********'
+EMAIL_HOST_PASSWORD = '*********'
+EMAIL_PORT = '465'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 

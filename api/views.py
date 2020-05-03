@@ -5,7 +5,7 @@ from django.shortcuts import render
 from api.models import User,otp
 from CustomCode import string_generator,password_functions,validator,autentication
 from django.http import HttpResponse #httpresponse
-from django.core.mail import EmailMessage #django email module
+from django.core.mail import send_mail #django email module
 
 # Create your views here.
 @api_view(['GET'])

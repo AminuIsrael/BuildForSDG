@@ -5,7 +5,7 @@ from django.shortcuts import render
 from api.models import User,otp
 from CustomCode import string_generator,password_functions,validator,autentication
 from django.http import HttpResponse #httpresponse
-from django.core.mail import send_mail #django email module
+from django.core.mail import EmailMessage #django email module
 from django.conf import settings
 
 # Create your views here.
@@ -56,12 +56,12 @@ def user_registration(request):
 
                 #EMAIL CONDITION, CHECK IF SAVE IS SUCCESSFUL
                 if user_OTP.save():
-                    msg = send_mail(
-                        'WasteCoin OTP verification',
-                        'Hello ' + firstName + " " + lastName + "\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
-                        settings.EMAIL_HOST_USER,
-                        [email],
-                        fail_silently=False,
+                    msg = EmailMessage(
+                        subject = 'WasteCoin OTP verification',
+                        body = 'Hello ' + firstName + " " + lastName + "\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
+                        from_email = settings.EMAIL_HOST_USER,
+                        to = [email],
+                        # fail_silently=False,
                     )
                     return msg
 

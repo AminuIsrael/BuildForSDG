@@ -75,10 +75,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'WasteCoins.wsgi.application'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mailtrap.io'
-EMAIL_HOST_USER = '9f1f826111fcf6'
-EMAIL_HOST_PASSWORD = 'bb7a3caae5d1b5'
-EMAIL_PORT = '2525'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'managwufrancis@gmail.com'
+EMAIL_HOST_PASSWORD = 'doxzy123'
+
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 

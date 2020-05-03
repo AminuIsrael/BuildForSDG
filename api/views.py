@@ -6,6 +6,7 @@ from api.models import User,otp
 from CustomCode import string_generator,password_functions,validator,autentication
 from django.http import HttpResponse #httpresponse
 from django.core.mail import send_mail #django email module
+from django.conf import settings
 
 # Create your views here.
 @api_view(['GET'])
@@ -57,8 +58,8 @@ def user_registration(request):
                 if user_OTP.save():
                     msg = send_mail(
                         'WasteCoin OTP verification',
-                        'Hello' + firstName + " " + lastName + "\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
-                        'watecoin.com',
+                        'Hello ' + firstName + " " + lastName + "\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
+                        settings.EMAIL_HOST_USER,
                         [email],
                         fail_silently=False,
                     )

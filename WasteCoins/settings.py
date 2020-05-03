@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'c^1vtw$lxdxay*y&3p5du2o_+xv97fbmh4=f34#nc1u4^)sq)y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "*"
@@ -80,7 +80,6 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'managwufrancis@gmail.com'
 EMAIL_HOST_PASSWORD = 'doxzy123'
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 

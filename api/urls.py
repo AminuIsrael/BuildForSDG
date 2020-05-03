@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/v1/signup',views.user_registration),
     path('api/v1/signin',views.user_login),
     path('api/v1/verification',views.user_verification)
+    
 ]

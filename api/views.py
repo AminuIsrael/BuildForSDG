@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from django.shortcuts import render
 from api.models import User,otp
 from CustomCode import string_generator,password_functions,validator,autentication
-
+from django.http import HttpResponse #httpresponse
+from django.core.mail import EmailMessage #django email module
 
 # Create your views here.
 @api_view(['GET'])
@@ -51,12 +52,26 @@ def user_registration(request):
                 #Save OTP
                 user_OTP =otp(user=new_userData,otp_code=code)
                 user_OTP.save()
-                return_data = {
-                    "error": "0",
-                    "message":"The registration was successful",
-                    "user_id": f"{userRandomId}",
-                    "OTP_Code": f"{code}"
-                }
+
+                #EMAIL CONDITION, CHECK IF SAVE IS SUCCESSFUL
+                if user_OTP.save():
+                    msg = send_mail(
+                        'WasteCoin OTP verification',
+                        'Hello' + firstName + " " + lastName + "\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
+                        'watecoin.com',
+                        [email],
+                        fail_silently=False,
+                    )
+                    return msg
+
+                    if msg:
+                        return_data = {
+                            "error": "0",
+                            "message":"The registration was successful",
+                            "user_id": f"{userRandomId}",
+                            "OTP_Code": f"{code}"
+                        }
+                        
         else:
             return_data = {
                 "error": "2",
@@ -183,3 +198,5 @@ def user_login(request):
             "message": str(e)
         }
     return Response(return_data)
+
+

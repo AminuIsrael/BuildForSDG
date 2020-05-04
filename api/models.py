@@ -27,3 +27,4 @@ class otp(models.Model):
     otp_code = models.IntegerField(verbose_name="OTP",blank=False)
     validated = models.BooleanField(default=False)
     date_added = models.DateTimeField(default=timezone.now)
+    otp_reset_code = models.TextField(max_length=20,verbose_name="Reset Code",default="")

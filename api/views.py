@@ -51,7 +51,7 @@ def user_registration(request):
                 #Save OTP
                 user_OTP =otp(user=new_userData,otp_code=code)
                 user_OTP.save()
-                send_email.send_email("WasteCoin OTP verification",email,' Hello ' + firstName + ",\nWelcome to WasteCoin,"+ "\nYour OTP verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
+                #send_email.send_email("WasteCoin OTP verification",email,' Hello ' + firstName + ",\nWelcome to WasteCoin,"+ "\nYour OTP verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message":"The registration was successful",
@@ -130,7 +130,7 @@ def resend_otp(request):
                 code = string_generator.numeric(6)
                 user_data.otp_code = code
                 user_data.save()
-                send_email.send_email("WasteCoin OTP Re-verification",email_address,' Hello ' + "\nYour OTP Re-verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
+                #send_email.send_email("WasteCoin OTP Re-verification",email_address,' Hello ' + "\nYour OTP Re-verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "OTP sent to mail",
@@ -235,7 +235,7 @@ def password_reset(request):
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.otp_reset_code = generate_pin
                 user_data.save()
-                send_email.send_email('WasteCoin Reset Password',emailAddress,' Hello ' + "\nYour Reset Password code is: \n " +generate_pin + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
+               # send_email.send_email('WasteCoin Reset Password',emailAddress,' Hello ' + "\nYour Reset Password code is: \n " +generate_pin + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "Successful, Email sent",

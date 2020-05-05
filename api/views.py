@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
 from api.models import User,otp
-from CustomCode import string_generator,password_functions,validator,autentication
+from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
 # Create your views here.
 @api_view(['GET'])
@@ -51,13 +51,7 @@ def user_registration(request):
                 #Save OTP
                 user_OTP =otp(user=new_userData,otp_code=code)
                 user_OTP.save()
-                # send_mail(
-                #         'WasteCoin OTP verification',
-                #         'Hello ' + firstName + " " + lastName + "\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
-                #         settings.EMAIL_HOST_USER,
-                #         [email],
-                #         fail_silently=False,
-                #     )
+                send_email.send_email("WasteCoin OTP verification",email,' Hello ' + firstName + ",\nWelcome to WasteCoin,"+ "\nYour OTP verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message":"The registration was successful",
@@ -136,14 +130,7 @@ def resend_otp(request):
                 code = string_generator.numeric(6)
                 user_data.otp_code = code
                 user_data.save()
-                # send_mail(
-                #         'WasteCoin OTP verification',
-                #         'Hello '
-                #         " ""\n Your OTP confirmation code is: \n " + code + " \n Use this code to verify your registration. WasteCoin will never ask you to share this code with anyone.",
-                #         settings.EMAIL_HOST_USER,
-                #         [email_address],
-                #         fail_silently=False,
-                #     )
+                send_email.send_email("WasteCoin OTP Re-verification",email_address,' Hello ' + "\nYour OTP Re-verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "OTP sent to mail",
@@ -248,13 +235,7 @@ def password_reset(request):
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.otp_reset_code = generate_pin
                 user_data.save()
-                # send_mail(
-                #     'WasteCoin Reset Password verification',
-                #     'Hello '" ""\n Your Reset Password pin is: \n " + generate_pin + " \n Use this code to reset you password here. WasteCoin will never ask you to share this code with anyone.",
-                #     settings.EMAIL_HOST_USER,
-                #     [emailAddress],
-                #     fail_silently=False,
-                #     )
+                send_email.send_email('WasteCoin Reset Password',emailAddress,' Hello ' + "\nYour Reset Password code is: \n " +generate_pin + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "Successful, Email sent",

@@ -1,7 +1,6 @@
 from datetime import datetime,timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.shortcuts import render
 from api.models import User,otp
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
@@ -205,7 +204,16 @@ def user_login(request):
                     if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
-                            "message": "Successfull"
+                            "message": "Successfull",
+                            "firstname": f"{user_data.firstname}",
+                            "lastname": f"{user_data.lastname}",
+                            "email": f"{user_data.email}",
+                            "phone_number": f"{user_data.user_phone}",
+                            "gender": f"{user_data.user_gender}",
+                            "address": f"{user_data.user_password}",
+                            "state": f"{user_data.user_state}",
+                            "LGA": f"{user_data.user_LGA}",
+                            "country": f"{user_data.user_country}"
                         }
                     elif is_verified == False:
                         return_data = {

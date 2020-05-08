@@ -1,7 +1,6 @@
 from datetime import datetime,timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.shortcuts import render
 from api.models import User,otp
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
@@ -57,7 +56,7 @@ def user_registration(request):
                     "message":"The registration was successful",
                     "user_id": f"{userRandomId}",
                     "OTP_Code": f"{code}"
-                    } 
+                    }
         else:
             return_data = {
                 "error":"2",
@@ -66,7 +65,7 @@ def user_registration(request):
     except Exception as e:
         return_data = {
             "error": "3",
-            "message": str(e)
+            "message": "An error occured"
         }
     return Response(return_data)
 
@@ -109,7 +108,7 @@ def user_verification(request,user_id):
     except Exception as e:
         return_data = {
             "error": "3",
-            "message": str(e)
+            "message": "An error occured"
         }
     return Response(return_data)
 
@@ -180,7 +179,7 @@ def user_login(request):
                             "state": f"{user_data.user_state}",
                             "LGA": f"{user_data.user_LGA}",
                             "country": f"{user_data.user_country}"
-                            
+
                             }
                     elif is_verified == False:
                         return_data = {
@@ -198,14 +197,23 @@ def user_login(request):
                         "error": "1",
                         "message": "User does not exist"
                     }
-                else:   
+                else:
                     user_data = User.objects.get(user_phone=email_phone)
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
-                            "message": "Successfull"
+                            "message": "Successfull",
+                            "firstname": f"{user_data.firstname}",
+                            "lastname": f"{user_data.lastname}",
+                            "email": f"{user_data.email}",
+                            "phone_number": f"{user_data.user_phone}",
+                            "gender": f"{user_data.user_gender}",
+                            "address": f"{user_data.user_password}",
+                            "state": f"{user_data.user_state}",
+                            "LGA": f"{user_data.user_LGA}",
+                            "country": f"{user_data.user_country}"
                         }
                     elif is_verified == False:
                         return_data = {
@@ -272,7 +280,6 @@ def password_change(request,user_id):
         new_password = request.data.get("new_password")
         fields = [reset_code,new_password]
         if not None in fields and not "" in fields:
-            #get user info 
             user_data = User.objects.get(user_id=user_id)
             otp_reset_code = otp.objects.get(user__user_id=user_id).otp_reset_code
             if reset_code == otp_reset_code:

@@ -280,6 +280,7 @@ def password_change(request,user_id):
         new_password = request.data.get("new_password")
         fields = [reset_code,new_password]
         if not None in fields and not "" in fields:
+            #get user info
             user_data = User.objects.get(user_id=user_id)
             otp_reset_code = otp.objects.get(user__user_id=user_id).otp_reset_code
             if reset_code == otp_reset_code:

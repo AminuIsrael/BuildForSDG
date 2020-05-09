@@ -12,6 +12,7 @@ def send_email(subject,email_address,messageToSend):
 
     msg.attach(MIMEText(message, 'plain'))
     server = smtplib.SMTP('smtp.gmail.com: 587')
+    server.ehlo()
     server.starttls()
     server.sendmail(msg['From'], msg['To'], msg.as_string())
     server.login(msg['From'], password)

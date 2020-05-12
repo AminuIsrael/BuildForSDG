@@ -186,7 +186,6 @@ def user_login(request):
                                     
                                 }
                             ]
-                            
 
                             }
                     elif is_verified == False:
@@ -229,6 +228,7 @@ def user_login(request):
                                     
                                 }
                             ]
+                          
                         }
                     elif is_verified == False:
                         return_data = {

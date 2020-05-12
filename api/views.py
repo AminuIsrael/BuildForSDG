@@ -37,6 +37,7 @@ def user_registration(request):
             else:
                 #generate user_id
                 userRandomId = string_generator.alphanumeric(20)
+                user_token = string_generator.alphanumeric(50)
                 #encrypt password
                 encryped_password = password_functions.generate_password_hash(password)
                 #Save user_data
@@ -53,8 +54,8 @@ def user_registration(request):
                 #send_email.send_email("WasteCoin OTP verification",email,' Hello ' + firstName + ",\nWelcome to WasteCoin,"+ "\nYour OTP verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
-                    "message":"The registration was successful",
-                    "user_id": f"{userRandomId}",
+                    "message": "The registration was successful",
+                    "token": f"{userRandomId}",
                     "OTP_Code": f"{code}"
                     }
         else:
@@ -170,15 +171,22 @@ def user_login(request):
                         return_data = {
                             "error": "0",
                             "message": "Successfull",
-                            "firstname": f"{user_data.firstname}",
-                            "lastname": f"{user_data.lastname}",
-                            "email": f"{user_data.email}",
-                            "phone_number": f"{user_data.user_phone}",
-                            "gender": f"{user_data.user_gender}",
-                            "address": f"{user_data.user_password}",
-                            "state": f"{user_data.user_state}",
-                            "LGA": f"{user_data.user_LGA}",
-                            "country": f"{user_data.user_country}"
+                            "token": f'{user_data.user_id}',
+                            "user_details": [
+                                {
+                                    "firstname": f"{user_data.firstname}",
+                                    "lastname": f"{user_data.lastname}",
+                                    "email": f"{user_data.email}",
+                                    "phone_number": f"{user_data.user_phone}",
+                                    "gender": f"{user_data.user_gender}",
+                                    "address": f"{user_data.user_password}",
+                                    "state": f"{user_data.user_state}",
+                                    "LGA": f"{user_data.user_LGA}",
+                                    "country": f"{user_data.user_country}"
+                                    
+                                }
+                            ]
+                            
 
                             }
                     elif is_verified == False:
@@ -201,19 +209,26 @@ def user_login(request):
                     user_data = User.objects.get(user_phone=email_phone)
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
+                    user_token = string_generator.alphanumeric(50)
                     if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
                             "message": "Successfull",
-                            "firstname": f"{user_data.firstname}",
-                            "lastname": f"{user_data.lastname}",
-                            "email": f"{user_data.email}",
-                            "phone_number": f"{user_data.user_phone}",
-                            "gender": f"{user_data.user_gender}",
-                            "address": f"{user_data.user_password}",
-                            "state": f"{user_data.user_state}",
-                            "LGA": f"{user_data.user_LGA}",
-                            "country": f"{user_data.user_country}"
+                            "token": f'{user_data.user_id}',
+                            "user_details": [
+                                {
+                                    "firstname": f"{user_data.firstname}",
+                                    "lastname": f"{user_data.lastname}",
+                                    "email": f"{user_data.email}",
+                                    "phone_number": f"{user_data.user_phone}",
+                                    "gender": f"{user_data.user_gender}",
+                                    "address": f"{user_data.user_password}",
+                                    "state": f"{user_data.user_state}",
+                                    "LGA": f"{user_data.user_LGA}",
+                                    "country": f"{user_data.user_country}"
+                                    
+                                }
+                            ]
                         }
                     elif is_verified == False:
                         return_data = {

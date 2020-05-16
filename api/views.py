@@ -232,7 +232,7 @@ def user_login(request):
                         return_data = {
                             "error": "0",
                             "message": "Successfull",
-                            "token": f'{user_data.user_id}',
+                            "token": token.decode('UTF-8'),
                             "user_details": [
                                 {
                                     "firstname": f"{user_data.firstname}",

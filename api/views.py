@@ -1,7 +1,9 @@
-from datetime import datetime,timezone
+import jwt
+import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.models import User,otp
+from WasteCoins import settings
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
 # Create your views here.
@@ -9,11 +11,10 @@ from CustomCode import string_generator,password_functions,validator,autenticati
 def index_page(request):
     return_data = {
         "error" : "0",
-        "message" : "Successful",
+        "message" : "Successful"
     }
     return Response(return_data)
 
-#User registration endpoint
 @api_view(["POST"])
 def user_registration(request):
     try:
@@ -51,11 +52,17 @@ def user_registration(request):
                 #Save OTP
                 user_OTP =otp(user=new_userData,otp_code=code)
                 user_OTP.save()
+                #Generate token
+                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=30) #set limit for user
+                payload = {"user_id": f"{userRandomId}",
+                           "exp":timeLimit}
+                token = jwt.encode(payload,settings.SECRET_KEY)
                 #send_email.send_email("WasteCoin OTP verification",email,' Hello ' + firstName + ",\nWelcome to WasteCoin,"+ "\nYour OTP verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "The registration was successful",
-                    "token": f"{userRandomId}",
+                    "token": f"{token.decode('UTF-8')}",
+                    "token-expiration": f"{timeLimit}",
                     "OTP_Code": f"{code}"
                     }
         else:
@@ -66,20 +73,22 @@ def user_registration(request):
     except Exception as e:
         return_data = {
             "error": "3",
-            "message": "An error occured"
+            "message": str(e)
         }
     return Response(return_data)
 
 #User verfication
 @api_view(["POST"])
-@autentication.user_tokenid
-def user_verification(request,user_id):
+@autentication.token_required
+def user_verification(request,decrypedToken):
     try:
         otp_entered = request.data.get("otp",None)
         if otp_entered is not None and otp_entered is not "":
-            user_data = otp.objects.get(user__user_id=user_id)
+            user_data = otp.objects.get(user__user_id=decrypedToken['user_id'])
             otpCode,date_added = str(user_data.otp_code),user_data.date_added
-            date_now = datetime.now(timezone.utc)
+            print(otpCode)
+            print(otp_entered)
+            date_now = datetime.datetime.now(datetime.timezone.utc)
             duration = float((date_now - date_added).total_seconds())
             timeLimit = 1800.0 #30 mins interval
             if otp_entered == otpCode and duration < timeLimit:
@@ -167,11 +176,17 @@ def user_login(request):
                     user_data = User.objects.get(email=email_phone)
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
+                    #Generate token
+                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=30) #set limit for user
+                    payload = {"user_id": f'{user_data.user_id}',
+                               "exp":timeLimit}
+                    token = jwt.encode(payload,settings.SECRET_KEY)
                     if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
                             "message": "Successfull",
-                            "token": f'{user_data.user_id}',
+                            "token": token.decode('UTF-8'),
+                            "token-expiration": f"{timeLimit}",
                             "user_details": [
                                 {
                                     "firstname": f"{user_data.firstname}",
@@ -179,7 +194,7 @@ def user_login(request):
                                     "email": f"{user_data.email}",
                                     "phone_number": f"{user_data.user_phone}",
                                     "gender": f"{user_data.user_gender}",
-                                    "address": f"{user_data.user_password}",
+                                    "address": f"{user_data.user_address}",
                                     "state": f"{user_data.user_state}",
                                     "LGA": f"{user_data.user_LGA}",
                                     "country": f"{user_data.user_country}"
@@ -187,8 +202,7 @@ def user_login(request):
                                 }
                             ]
                             
-
-                            }
+                        }
                     elif is_verified == False:
                         return_data = {
                             "error" : "1",
@@ -209,7 +223,11 @@ def user_login(request):
                     user_data = User.objects.get(user_phone=email_phone)
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
-                    user_token = string_generator.alphanumeric(50)
+                    #Generate token
+                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=30) #set limit for user
+                    payload = {"user_id": f'{user_data.user_id}',
+                               "exp":timeLimit}
+                    token = jwt.encode(payload,settings.SECRET_KEY)
                     if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
@@ -222,7 +240,7 @@ def user_login(request):
                                     "email": f"{user_data.email}",
                                     "phone_number": f"{user_data.user_phone}",
                                     "gender": f"{user_data.user_gender}",
-                                    "address": f"{user_data.user_password}",
+                                    "address": f"{user_data.user_address}",
                                     "state": f"{user_data.user_state}",
                                     "LGA": f"{user_data.user_LGA}",
                                     "country": f"{user_data.user_country}"
@@ -288,16 +306,16 @@ def password_reset(request):
 
 #Change password
 @api_view(["POST"])
-@autentication.user_tokenid
-def password_change(request,user_id):
+@autentication.token_required
+def password_change(request,decrypedToken):
     try:
         reset_code = request.data.get("reset_code")
         new_password = request.data.get("new_password")
         fields = [reset_code,new_password]
         if not None in fields and not "" in fields:
             #get user info
-            user_data = User.objects.get(user_id=user_id)
-            otp_reset_code = otp.objects.get(user__user_id=user_id).otp_reset_code
+            user_data = User.objects.get(user_id=decrypedToken["user_id"])
+            otp_reset_code = otp.objects.get(user__user_id=decrypedToken["user_id"]).otp_reset_code
             if reset_code == otp_reset_code:
                 #encrypt password
                 encryptpassword = password_functions.generate_password_hash(new_password)

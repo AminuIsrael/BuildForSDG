@@ -53,7 +53,7 @@ def user_registration(request):
                 user_OTP =otp(user=new_userData,otp_code=code)
                 user_OTP.save()
                 #Generate token
-                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=30) #set limit for user
+                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
                            "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
@@ -62,7 +62,7 @@ def user_registration(request):
                     "error": "0",
                     "message": "The registration was successful",
                     "token": f"{token.decode('UTF-8')}",
-                    "token-expiration": f"{timeLimit}",
+                    "elapsed_time": f"{timeLimit}",
                     "OTP_Code": f"{code}"
                     }
         else:
@@ -177,7 +177,7 @@ def user_login(request):
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     #Generate token
-                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=30) #set limit for user
+                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
@@ -224,7 +224,7 @@ def user_login(request):
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     #Generate token
-                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=30) #set limit for user
+                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)

@@ -1,17 +1,26 @@
 from rest_framework.response import Response
 from rest_framework import status
+import jwt
+from WasteCoins import settings
 
-def user_tokenid(something):
+def token_required(something):
     def wrap(request):
         try:
-            if request.META['HTTP_TOKEN_ID'] is not '':
-                token_passed = request.META['HTTP_TOKEN_ID']
-                if token_passed != "":
-                    return something(request,token_passed)
-                else:
+            if request.META['HTTP_TOKEN'] != '' and request.META['HTTP_TOKEN'] != None:
+                token_passed = request.META['HTTP_TOKEN']
+                try:
+                    data = jwt.decode(token_passed,settings.SECRET_KEY, algorithms=['HS256'])
+                    return something(request,data)
+                except jwt.exceptions.ExpiredSignatureError:
                     return_data = {
-                    'error': "1",
-                    'message': "Invalid Token"
+                        "error": "1",
+                        "message": "Token has expired"
+                        }
+                    return Response(return_data, status=status.HTTP_401_UNAUTHORIZED)
+                except:
+                    return_data = {
+                        "error": "1",
+                        "message": "Invalid Token"
                     }
                     return Response(return_data, status=status.HTTP_401_UNAUTHORIZED)
             else:
@@ -21,10 +30,11 @@ def user_tokenid(something):
                     }
                 return Response(return_data, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-               return_data = {
-                   "error" : "3",
-                   "message" : str(e)
-               }
-               return Response(return_data, status=status.HTTP_401_UNAUTHORIZED)
-
+            return_data = {
+                "error" : "3",
+                "message" : "An error occured"
+                }
+            return Response(return_data, status=status.HTTP_401_UNAUTHORIZED)
     return wrap
+                
+                

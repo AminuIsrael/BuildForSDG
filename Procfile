@@ -1,1 +1,1 @@
-web: gunicorn WasteCoins.wsgi --log-file -
+web: gunicorn wasteCoin.wsgi --log-file -

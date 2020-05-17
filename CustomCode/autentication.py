@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 import jwt
-from WasteCoins import settings
+from wasteCoin import settings
 
 def token_required(something):
     def wrap(request):

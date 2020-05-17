@@ -6,7 +6,6 @@ from django.utils import timezone
 class User(models.Model):
     class Meta:
         db_table = "WasteCoin_user_table"
-
     user_id = models.CharField(max_length=500,unique=True)
     firstname = models.CharField(max_length=30,verbose_name="Firstname",blank=True)
     lastname = models.CharField(max_length=30,verbose_name="Lastname",blank=True)
@@ -23,8 +22,6 @@ class User(models.Model):
 class otp(models.Model):
     class Meta:
         db_table = "OTP_Code"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     password_reset_code = models.TextField(max_length=20,verbose_name="Reset Code",default="")
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     otp_code = models.TextField(verbose_name="OTP",blank=False)
-#     validated = models.BooleanField(default=False)
-#     date_added = models.DateTimeField(default=timezone.now)
+    date_added = models.DateTimeField(default=timezone.now)

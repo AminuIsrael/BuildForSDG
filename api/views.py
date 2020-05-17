@@ -3,7 +3,7 @@ import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.models import User,otp
-from WasteCoins import settings
+from wasteCoin import settings
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
 # Create your views here.
@@ -47,11 +47,9 @@ def user_registration(request):
                                 user_password=encryped_password,user_address=address,
                                 user_state=state,user_LGA=lga,user_country=country)
                 new_userData.save()
-                #Generate OTP
-                #code = string_generator.numeric(6)
                 #Save OTP
-                #user_OTP =otp(user=new_userData,otp_code=code)
-                #user_OTP.save()
+                user_OTP =otp(user=new_userData)
+                user_OTP.save()
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
@@ -271,7 +269,7 @@ def password_reset(request):
             else:
                 user_data = otp.objects.get(user__email=emailAddress)
                 generate_pin = string_generator.alphanumeric(15)
-                user_data.otp_reset_code = generate_pin
+                user_data.password_reset_code = generate_pin
                 user_data.save()
                 #send_email.send_email('WasteCoin Reset Password',emailAddress,' Hello ' + "\nYour Reset Password code is: \n " +generate_pin + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
@@ -287,7 +285,7 @@ def password_reset(request):
     except Exception as e:
         return_data = {
             "error": "3",
-            "message": "An error occured"
+            "message": str(e)
         }
     return Response(return_data)
 
@@ -302,7 +300,8 @@ def password_change(request,decrypedToken):
         if not None in fields and not "" in fields:
             #get user info
             user_data = User.objects.get(user_id=decrypedToken["user_id"])
-            otp_reset_code = otp.objects.get(user__user_id=decrypedToken["user_id"]).otp_reset_code
+            otp_reset_code = otp.objects.get(user__user_id=decrypedToken["user_id"]).password_reset_code
+            print(otp_reset_code)
             if reset_code == otp_reset_code:
                 #encrypt password
                 encryptpassword = password_functions.generate_password_hash(new_password)
@@ -312,7 +311,7 @@ def password_change(request,decrypedToken):
                     "error": "0",
                     "message": "Successfull, Password Changed"
                 }
-            elif resend_otp != otp_reset_code:
+            elif reset_code != otp_reset_code:
                 return_data = {
                     "error": "1",
                     "message": "Code does not Match"
@@ -325,6 +324,6 @@ def password_change(request,decrypedToken):
     except Exception as e:
         return_data = {
             "error": "3",
-            "message": "An error occured"
+            "message": str(e)
         }
     return Response(return_data)

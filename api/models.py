@@ -20,11 +20,11 @@ class User(models.Model):
     user_country = models.TextField(max_length=200,verbose_name="Country")
     date_added = models.DateTimeField(default=timezone.now)
 
-# class otp(models.Model):
-#     class Meta:
-#         db_table = "OTP_Code"
+class otp(models.Model):
+    class Meta:
+        db_table = "OTP_Code"
+    password_reset_code = models.TextField(max_length=20,verbose_name="Reset Code",default="")
 #     user = models.ForeignKey(User, on_delete=models.CASCADE)
 #     otp_code = models.TextField(verbose_name="OTP",blank=False)
 #     validated = models.BooleanField(default=False)
 #     date_added = models.DateTimeField(default=timezone.now)
-#     otp_reset_code = models.TextField(max_length=20,verbose_name="Reset Code",default="")

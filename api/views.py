@@ -2,7 +2,7 @@ import jwt
 import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.models import User
+from api.models import User,otp
 from WasteCoins import settings
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 

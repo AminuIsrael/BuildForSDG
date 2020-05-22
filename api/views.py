@@ -74,86 +74,6 @@ def user_registration(request):
         }
     return Response(return_data)
 
-# #User verfication
-# @api_view(["POST"])
-# @autentication.token_required
-# def user_verification(request,decrypedToken):
-#     try:
-#         otp_entered = request.data.get("otp",None)
-#         if otp_entered is not None and otp_entered is not "":
-#             user_data = otp.objects.get(user__user_id=decrypedToken['user_id'])
-#             otpCode,date_added = str(user_data.otp_code),user_data.date_added
-#             print(otpCode)
-#             print(otp_entered)
-#             date_now = datetime.datetime.now(datetime.timezone.utc)
-#             duration = float((date_now - date_added).total_seconds())
-#             timeLimit = 1800.0 #30 mins interval
-#             if otp_entered == otpCode and duration < timeLimit:
-#                 #validate user
-#                 user_data.validated = True
-#                 user_data.save()
-#                 return_data = {
-#                     "error": "0",
-#                     "message":"User Verified"
-#                 }
-#             elif otp_entered != otpCode and duration < timeLimit:
-#                 return_data = {
-#                     "error": "1",
-#                     "message": "Incorrect OTP"
-#                 }
-#             elif otp_entered == otpCode and duration > timeLimit:
-#                 user_data.save()
-#                 return_data = {
-#                     "error": "1",
-#                     "message": "OTP has expired"
-#                 }
-#         else:
-#             return_data = {
-#                 "error": "2",
-#                 "message": "Invalid Parameters"
-#             }
-#     except Exception as e:
-#         return_data = {
-#             "error": "3",
-#             "message": "An error occured"
-#         }
-#     return Response(return_data)
-
-# #resend OTP
-# @api_view(["POST"])
-# def resend_otp(request):
-#     try:
-#         email_address = request.data.get('emailaddress',None)
-#         if email_address is not None and email_address is not "":
-#             if User.objects.filter(email =email_address).exists() == False:
-#                     return_data = {
-#                         "error": "1",
-#                         "message": "User does not exist"
-#                     }
-#             else:
-#                 user_data = otp.objects.get(user__email=email_address)
-#                 #generate new otp
-#                 code = string_generator.numeric(6)
-#                 user_data.otp_code = code
-#                 user_data.save()
-#                 #send_email.send_email("WasteCoin OTP Re-verification",email_address,' Hello ' + "\nYour OTP Re-verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
-#                 return_data = {
-#                     "error": "0",
-#                     "message": "OTP sent to mail",
-#                     "OTP_Code": f"{code}"
-#                 }
-#         else:
-#             return_data = {
-#                 "error": "2",
-#                 "message": "Invalid Parameters"
-#             }
-#     except Exception as e:
-#         return_data = {
-#             "error": "3",
-#             "message": "An error occured"
-#         }
-#     return Response(return_data)
-
 #User login
 @api_view(["POST"])
 def user_login(request):
@@ -223,6 +143,7 @@ def user_login(request):
                             "error": "0",
                             "message": "Successfull",
                             "token": token.decode('UTF-8'),
+                            "token-expiration": f"{timeLimit}",
                             "user_details": [
                                 {
                                     "firstname": f"{user_data.firstname}",
@@ -232,11 +153,12 @@ def user_login(request):
                                     "gender": f"{user_data.user_gender}",
                                     "address": f"{user_data.user_address}",
                                     "state": f"{user_data.user_state}",
-                                    "LGA": f"{r_data.user_LGA}",
+                                    "LGA": f"{user_data.user_LGA}",
                                     "country": f"{user_data.user_country}"
                                     
                                 }
                             ]
+                            
                         }
                     else:
                         return_data = {
@@ -327,3 +249,11 @@ def password_change(request,decrypedToken):
             "message": str(e)
         }
     return Response(return_data)
+
+@api_view(["POST"])
+@autentication.token_required
+def dashboard_data(request,decrypedToken):
+    try:
+        pass
+    except Exception as e:
+        pass

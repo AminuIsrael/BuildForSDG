@@ -261,15 +261,16 @@ def password_change(request,decrypedToken):
 @autentication.token_required
 def Dashboard(request,decrypedToken):
     try:
-        if decrypedToken['user_id'] != None and decrypedToken['user_id'] != '':
-            user_data = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])
+        user_id = decrypedToken['user_id']
+        if user_id != None and user_id != '':
+            user_data = UserCoins.objects.get(user__user_id=user_id)
             user_coins = user_data.allocateWasteCoin
             month = user_data.date_added.strftime('%B') 
             rate = ExchangeRate()
             exchangeRate,changed_rate = rate.exchangeRate,rate.changedRate
             minedCoins = user_data.minedCoins
             unminedCoins = user_coins - minedCoins
-            miner_id = LeaderBoard.objects.get(user__user_id=decrypedToken["user_id"]).minerID
+            miner_id = LeaderBoard.objects.get(user__user_id=user_id).minerID
             return_data = {
                 "error": "0",
                 "message": "Sucessfull",
@@ -307,4 +308,28 @@ def Dashboard(request,decrypedToken):
         }
     return Response(return_data)
 
+@api_view(["GET"])
+def LeadBoard(request):
+    try:
+        WasteCoinBoard = LeaderBoard.objects.all().order_by('-minedCoins')
+        i = 0
+        topCoinsMined = []
+        while i < 5:
+            topUsers = {
+                "miner_id": WasteCoinBoard[i].minerID,
+                "CoinMined": WasteCoinBoard[i].minedCoins
+            }
+            topCoinsMined.append(topUsers)
+            i += 1
+        return_data = {
+            "error": "0",
+            "message": "Successfull",
+            "LeaderBoard": topCoinsMined
+        }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)
 

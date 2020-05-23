@@ -2,7 +2,7 @@ import jwt
 import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.models import User,otp
+from api.models import User,otp,UserCoins,LeaderBoard,ExchangeRate
 from wasteCoin import settings
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
@@ -38,6 +38,7 @@ def user_registration(request):
             else:
                 #generate user_id
                 userRandomId = string_generator.alphanumeric(20)
+                miner_id = string_generator.numeric(7)
                 user_token = string_generator.alphanumeric(50)
                 #encrypt password
                 encryped_password = password_functions.generate_password_hash(password)
@@ -50,6 +51,12 @@ def user_registration(request):
                 #Save OTP
                 user_OTP =otp(user=new_userData)
                 user_OTP.save()
+                #Generate default coins
+                user_Coins = UserCoins(user=new_userData)
+                user_Coins.save()
+                #add to leaderBoard
+                user_Board = LeaderBoard(user=new_userData,minerID=miner_id)
+                user_Board.save()
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
@@ -252,8 +259,52 @@ def password_change(request,decrypedToken):
 
 @api_view(["POST"])
 @autentication.token_required
-def dashboard_data(request,decrypedToken):
+def Dashboard(request,decrypedToken):
     try:
-        pass
+        if decrypedToken['user_id'] != None and decrypedToken['user_id'] != '':
+            user_data = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])
+            user_coins = user_data.allocateWasteCoin
+            month = user_data.date_added.strftime('%B') 
+            rate = ExchangeRate()
+            exchangeRate,changed_rate = rate.exchangeRate,rate.changedRate
+            minedCoins = user_data.minedCoins
+            unminedCoins = user_coins - minedCoins
+            miner_id = LeaderBoard.objects.get(user__user_id=decrypedToken["user_id"]).minerID
+            return_data = {
+                "error": "0",
+                "message": "Sucessfull",
+                "data": [
+                    {
+                        "allocatedWasteCoin": user_coins,
+                        "month": month,
+                        "exchangeRate": exchangeRate,
+                        "changedRate": changed_rate,
+                        "summary": [
+                            {
+                                "mined": minedCoins,
+                                "unMined": unminedCoins
+                            }
+                        ],
+                        "totalWasteCoinMined": minedCoins,
+                        "leaderBoard":[
+                            {
+                                "minerId": miner_id,
+                                "wasteCoinsMined": minedCoins
+                            }
+                        ]
+                    }
+                ]
+            }
+        else:
+            return_data = {
+                "error": "2",
+                "message": "Invalid Parameter"
+            } 
     except Exception as e:
-        pass
+        return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)
+
+

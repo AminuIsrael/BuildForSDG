@@ -18,10 +18,34 @@ class User(models.Model):
     user_LGA = models.TextField(max_length=200,verbose_name="State")
     user_country = models.TextField(max_length=200,verbose_name="Country")
     date_added = models.DateTimeField(default=timezone.now)
-
+    role = models.TextField(max_length=50,verbose_name="User role",default="user")
+    
 class otp(models.Model):
     class Meta:
         db_table = "OTP_Code"
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     password_reset_code = models.TextField(max_length=20,verbose_name="Reset Code",default="")
     date_added = models.DateTimeField(default=timezone.now)
+
+
+class UserCoins(models.Model):
+    class Meta:
+        db_table = "User_Coins"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    allocateWasteCoin = models.IntegerField(verbose_name="AllocatedWasteCoin",default=0)
+    minedCoins = models.IntegerField(verbose_name="minedCoins",default=0)
+    date_added = date_added = models.DateTimeField(default=timezone.now)
+
+class LeaderBoard(models.Model):
+    class Meta:
+        db_table = "WC_LeaderBoard"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    minerID = models.CharField(max_length=500,unique=True,verbose_name="miner_ID")
+    minedCoins = models.IntegerField(default=0,verbose_name="mined_Coins")
+
+class ExchangeRate(models.Model):
+    class Meta:
+        db_table = "Exchange_Rate"
+    exchangeRate = models.FloatField(default=0,verbose_name="exchangeRate")
+    changedRate = models.FloatField(default=0,verbose_name="changedRate")
+    

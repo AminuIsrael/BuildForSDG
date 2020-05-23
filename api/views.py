@@ -314,7 +314,8 @@ def LeadBoard(request):
         WasteCoinBoard = LeaderBoard.objects.all().order_by('-minedCoins')
         i = 0
         topCoinsMined = []
-        while i < 5:
+        numberOfUsers = 5
+        while i < numberOfUsers:
             topUsers = {
                 "miner_id": WasteCoinBoard[i].minerID,
                 "CoinMined": WasteCoinBoard[i].minedCoins

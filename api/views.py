@@ -40,7 +40,7 @@ def user_registration(request):
                 userRandomId = string_generator.alphanumeric(20)
                 miner_id = string_generator.numeric(7)
                 user_token = string_generator.alphanumeric(50)
-                transactionid = string_generator.numeric(15)
+                transactionid = string_generator.numeric(10)
                 #encrypt password
                 encryped_password = password_functions.generate_password_hash(password)
                 #Save user_data
@@ -67,7 +67,6 @@ def user_registration(request):
                 payload = {"user_id": f"{userRandomId}",
                            "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
-                #send_email.send_email("WasteCoin OTP verification",email,' Hello ' + firstName + ",\nWelcome to WasteCoin,"+ "\nYour OTP verification code is: \n " +code + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "The registration was successful",

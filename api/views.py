@@ -334,3 +334,78 @@ def LeadBoard(request):
         }
     return Response(return_data)
 
+@api_view(["GET"])
+@autentication.token_required
+def user_profile(request,decrypedToken):
+    try:
+        userID = decrypedToken['user_id']
+        UserInfo = User.objects.get(user_id=userID)
+        UserCoin = UserCoins.objects.get(user__user_id=userID)
+        UserMine = LeaderBoard.objects.get(user__user_id=userID)
+        return_data = {
+            "error": "0",
+            "message": "Successfull",
+            "user_data": [
+                {
+                    "user_details": [
+                        {
+                            "first_name": f"{UserInfo.firstname}",
+                            "last_name": f"{UserInfo.lastname}",
+                            "email": f"{UserInfo.email}",
+                            "phone_number": f"{UserInfo.user_phone}",
+                            "gender": f"{UserInfo.user_gender}",
+                            "address": f"{UserInfo.user_address}",
+                            "state": f"{UserInfo.user_state}",
+                            "LGA": f"{UserInfo.user_LGA}",
+                            "country": f"{UserInfo.user_country}"
+                              
+                        }
+                    ],
+                    "user_coins": [
+                        {
+                            "miner_id": f"{UserMine.minerID}",
+                            "allocatedCoin": f"{UserCoin.allocateWasteCoin}",
+                            "minedcoins": f"{UserCoin.minedCoins}"
+                        }
+                    ]
+                }
+            ]
+        }
+        
+    except Exception as e:
+        return_data = {
+            "error": "0",
+            "message": str(e)
+        }
+    return Response(return_data)
+
+# @api_view(["POST"])
+# @autentication.token_required
+# def allocate_coins(request,decrypedToken):
+#     try:
+#         coins_allocated = request.data.get("coins_allocated")
+#         #email of user to allocate coins to
+#         user_email = request.data.get("userEmail")
+#         if coins_allocated != None and coins_allocated != "":
+#             #Check if user is an admin
+#             user_identity = User.objects.get(user_id= decrypedToken['user_id'])
+#             user_role = user_identity.role
+#             if user_role != "admin":
+#                 return_data = {
+#                     "error": "0",
+#                     "message": "Unauthorized User"
+#                 }
+#             else:
+#                 #get user info
+#                 wastecoin_user = UserCoins.objects.get(user__email=user_email)
+#                 if User.objects.filter(email =user_email).exists() == False:
+#                     return_data = {
+#                     "error": "1",
+#                     "message": "User does not exist"
+#                 }
+                
+#     except Exception as e:
+#         return_data = {
+#             "error": "3",
+#             "message": "An error occured"
+#         }

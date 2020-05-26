@@ -13,6 +13,3 @@ def alpha(stringLength=8):
 def numeric(stringLength=8):
     Digits = string.digits
     return ''.join(random.sample(Digits, stringLength))
-
-
-

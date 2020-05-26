@@ -2,7 +2,7 @@ import jwt
 import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.models import User,otp,UserCoins,LeaderBoard,ExchangeRate
+from api.models import User,otp,UserCoins,LeaderBoard,ExchangeRate,UserTrasactionHistory
 from wasteCoin import settings
 from CustomCode import string_generator,password_functions,validator,autentication,send_email
 
@@ -40,6 +40,7 @@ def user_registration(request):
                 userRandomId = string_generator.alphanumeric(20)
                 miner_id = string_generator.numeric(7)
                 user_token = string_generator.alphanumeric(50)
+                transactionid = string_generator.numeric(15)
                 #encrypt password
                 encryped_password = password_functions.generate_password_hash(password)
                 #Save user_data
@@ -57,6 +58,10 @@ def user_registration(request):
                 #add to leaderBoard
                 user_Board = LeaderBoard(user=new_userData,minerID=miner_id)
                 user_Board.save()
+                #Save Transaction Details
+                user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
+                                                        amount=0,transaction="Credit")
+                user_transaction.save()
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
@@ -378,6 +383,12 @@ def user_profile(request,decrypedToken):
             "message": str(e)
         }
     return Response(return_data)
+
+@api_view(["POST"])
+@autentication.token_required
+def wallet_transactions(request,decrypedToken):
+    pass
+
 
 # @api_view(["POST"])
 # @autentication.token_required

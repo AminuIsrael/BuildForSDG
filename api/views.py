@@ -40,7 +40,7 @@ def user_registration(request):
                 userRandomId = string_generator.alphanumeric(20)
                 miner_id = string_generator.numeric(7)
                 user_token = string_generator.alphanumeric(50)
-                transactionid = string_generator.numeric()
+                transactionid = string_generator.alphanumeric(15)
                 #encrypt password
                 encryped_password = password_functions.generate_password_hash(password)
                 #Save user_data

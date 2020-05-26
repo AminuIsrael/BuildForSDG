@@ -53,7 +53,7 @@ class UserTrasactionHistory(models.Model):
     class Meta:
         db_table = "Transaction_History"
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    transaction_id = models.IntegerField(verbose_name="trans_id",unique=True)
+    transaction_id = models.TextField(verbose_name="trans_id",unique=True)
     amount = models.FloatField(verbose_name="CoinAmount")
     transaction = models.TextField(max_length=10,verbose_name="Transactions")
     date_added = models.DateTimeField(default=timezone.now)

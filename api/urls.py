@@ -9,5 +9,7 @@ urlpatterns = [
     path('api/v1/password_change',views.password_change),
     path('api/v1/dashboard',views.Dashboard),
     path('api/v1/leaderboard',views.LeadBoard),
-    path('api/v1/profile',views.user_profile)
+    path('api/v1/profile',views.user_profile),
+    path('api/v1/wallet',views.wallet_details),
+    path('api/v1/redeem',views.redeemcoins)
 ]

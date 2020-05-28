@@ -32,8 +32,8 @@ class UserCoins(models.Model):
     class Meta:
         db_table = "User_Coins"
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    allocateWasteCoin = models.FloatField(verbose_name="AllocatedWasteCoin",default=0)
-    minedCoins = models.FloatField(verbose_name="minedCoins",default=0)
+    allocateWasteCoin = models.FloatField(verbose_name="AllocatedWasteCoin")
+    minedCoins = models.FloatField(verbose_name="minedCoins")
     date_added = models.DateTimeField(default=timezone.now)
 
 class LeaderBoard(models.Model):
@@ -43,11 +43,6 @@ class LeaderBoard(models.Model):
     minerID = models.CharField(max_length=500,unique=True,verbose_name="miner_ID")
     minedCoins = models.FloatField(default=0,verbose_name="mined_Coins")
 
-class ExchangeRate(models.Model):
-    class Meta:
-        db_table = "Exchange_Rate"
-    exchangeRate = models.FloatField(default=0,verbose_name="exchangeRate")
-    changedRate = models.FloatField(default=0,verbose_name="changedRate")
 
 class UserTrasactionHistory(models.Model):
     class Meta:
@@ -55,6 +50,7 @@ class UserTrasactionHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id = models.TextField(verbose_name="trans_id",unique=True)
     amount = models.FloatField(verbose_name="CoinAmount")
+    coin_mined = models.FloatField(verbose_name="Coinmined")
     transaction = models.TextField(max_length=10,verbose_name="Transactions")
     date_added = models.DateTimeField(default=timezone.now)
     

@@ -2,9 +2,9 @@ import jwt
 import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.models import User,otp,UserCoins,LeaderBoard,ExchangeRate,UserTrasactionHistory
+from api.models import User,otp,UserCoins,LeaderBoard,UserTrasactionHistory
 from wasteCoin import settings
-from CustomCode import string_generator,password_functions,validator,autentication,send_email
+from CustomCode import string_generator,password_functions,validator,autentication,send_email,fixed_var
 
 # Create your views here.
 @api_view(['GET'])
@@ -270,8 +270,9 @@ def Dashboard(request,decrypedToken):
             user_data = UserCoins.objects.get(user__user_id=user_id)
             user_coins = user_data.allocateWasteCoin
             month = user_data.date_added.strftime('%B') 
-            rate = ExchangeRate()
-            exchangeRate,changed_rate = rate.exchangeRate,rate.changedRate
+            rate_exchange = fixed_var.exchange_rate
+            rate_changed = fixed_var.changed_rate
+            exchangeRate,changed_rate = rate_exchange,rate_changed
             minedCoins = user_data.minedCoins
             unminedCoins = user_coins - minedCoins
             miner_id = LeaderBoard.objects.get(user__user_id=user_id).minerID
@@ -378,44 +379,111 @@ def user_profile(request,decrypedToken):
         
     except Exception as e:
         return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)
+
+@api_view(["GET"])
+@autentication.token_required
+def wallet_details(request,decrypedToken):
+    try:
+        userID = decrypedToken['user_id']
+        user_coins = UserCoins.objects.get(user__user_id=userID)
+        transaction_history = UserTrasactionHistory.objects.filter(user__user_id=userID)
+        numOfTransactions = len(transaction_history)
+        trasactions = []
+        i = 0
+        while i < numOfTransactions:
+            perTransaction = {
+                "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),
+                "amount": transaction_history[i].amount,
+                "transaction": transaction_history[i].transaction
+            }
+            trasactions.append(perTransaction)
+            i += 1
+        return_data = {
             "error": "0",
+            "message": "Successfull",
+            "current_balance": f"{user_coins.allocateWasteCoin}",
+            "transaction_history": trasactions
+        }
+        
+    except Exception as e:
+        return_data = {
+            "error": "3",
             "message": str(e)
         }
     return Response(return_data)
 
 @api_view(["POST"])
 @autentication.token_required
-def wallet_transactions(request,decrypedToken):
-    pass
-
-
+def redeemcoins(request,decrypedToken):
+    try:
+        coins_amount = float(request.data.get("amount"))
+        if coins_amount is not None and coins_amount is not "":
+            user_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])
+            exchange_rate = fixed_var.exchange_rate
+            numofCoins = user_coins.allocateWasteCoin
+            user_data = User.objects.get(user_id=decrypedToken["user_id"])
+            if coins_amount > numofCoins:
+                return_data = {
+                    "error": "1",
+                    "message": "Not enough coins"
+                }
+            else:
+                transactionid = string_generator.alphanumeric(15)
+                toNaira = exchange_rate * coins_amount
+                user_coins.allocateWasteCoin = numofCoins - coins_amount
+                user_coins.minedCoins = coins_amount
+                user_coins.save()
+                #Save Transaction
+                transaction = UserTrasactionHistory(user=user_data,transaction_id=transactionid,
+                                      amount=toNaira,coin_mined=coins_amount,transaction="Debit")
+                transaction.save()
+                #Add coin to the coin repository
+                return_data = {
+                    "error": "0",
+                    "message": "Successful, Coin Mined",
+                    "transaction_id": f"{transactionid}",
+                    "amount": f"{toNaira}"
+                }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)    
+                
+                
+                
 # @api_view(["POST"])
 # @autentication.token_required
 # def allocate_coins(request,decrypedToken):
 #     try:
 #         coins_allocated = request.data.get("coins_allocated")
-#         #email of user to allocate coins to
-#         user_email = request.data.get("userEmail")
+#         #minerid of user to allocate coins to
+#         user_MinerID = request.data.get("")
 #         if coins_allocated != None and coins_allocated != "":
 #             #Check if user is an admin
 #             user_identity = User.objects.get(user_id= decrypedToken['user_id'])
 #             user_role = user_identity.role
-#             if user_role != "admin":
-#                 return_data = {
-#                     "error": "0",
-#                     "message": "Unauthorized User"
-#                 }
-#             else:
-#                 #get user info
-#                 wastecoin_user = UserCoins.objects.get(user__email=user_email)
-#                 if User.objects.filter(email =user_email).exists() == False:
-#                     return_data = {
-#                     "error": "1",
-#                     "message": "User does not exist"
-#                 }
-                
-#     except Exception as e:
-#         return_data = {
-#             "error": "3",
-#             "message": "An error occured"
-#         }
+#              if user_role != "agent":
+#                  return_data = {
+#                      "error": "0",
+#                      "message": "Unauthorized User"
+#                  }
+#              else:
+#                  #get user info
+#                  wastecoin_user = UserCoins.objects.get(user__email=user_email)
+#                  if User.objects.filter(email =user_email).exists() == False:
+#                      return_data = {
+#                      "error": "1",
+#                      "message": "User does not exist"
+#                  }
+               
+#      except Exception as e:
+#          return_data = {
+#              "error": "3",
+#              "message": "An error occured"
+#          }

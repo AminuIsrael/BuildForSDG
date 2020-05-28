@@ -53,7 +53,7 @@ def user_registration(request):
                 user_OTP =otp(user=new_userData)
                 user_OTP.save()
                 #Generate default coins
-                user_Coins = UserCoins(user=new_userData)
+                user_Coins = UserCoins(user=new_userData,allocateWasteCoin=0,minedCoins=0)
                 user_Coins.save()
                 #add to leaderBoard
                 user_Board = LeaderBoard(user=new_userData,minerID=miner_id)

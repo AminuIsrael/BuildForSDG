@@ -32,8 +32,8 @@ class UserCoins(models.Model):
     class Meta:
         db_table = "User_Coins"
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    allocateWasteCoin = models.FloatField(verbose_name="AllocatedWasteCoin")
-    minedCoins = models.FloatField(verbose_name="minedCoins")
+    allocateWasteCoin = models.FloatField(verbose_name="AllocatedWasteCoin",default=0)
+    minedCoins = models.FloatField(verbose_name="minedCoins",default=0)
     date_added = models.DateTimeField(default=timezone.now)
 
 class LeaderBoard(models.Model):

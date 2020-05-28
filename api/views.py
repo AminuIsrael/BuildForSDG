@@ -60,7 +60,7 @@ def user_registration(request):
                 user_Board.save()
                 #Save Transaction Details
                 user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
-                                                        amount=0,transaction="Credit")
+                                                        amount=0,coin_mined=0,transaction="Credit")
                 user_transaction.save()
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user

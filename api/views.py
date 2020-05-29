@@ -480,7 +480,7 @@ def allocate_coins(request,decrypedToken):
                     }
             else:
                 agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"]).allocateWasteCoin
-                if coins_allocated < agent_coins:
+                if coins_allocated > agent_coins:
                     return_data = {
                         "error": "1",
                         "message": "Not enough coins"
@@ -509,7 +509,7 @@ def allocate_coins(request,decrypedToken):
                     allocate.save()
                     return_data = {
                         "error": "0",
-                        "message": f"Successful,Coin allocated to {user_MinerID}"
+                        "message": f"Successful,coins allocated to {user.firstname} {user.lastname}"
                     }
         else:
             return_data = {

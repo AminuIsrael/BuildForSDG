@@ -480,7 +480,7 @@ def allocate_coins(request,decrypedToken):
                     }
             else:
                 agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"]).allocateWasteCoin
-                if coins_allocated > agent_coins:
+                if coins_allocated < agent_coins:
                     return_data = {
                         "error": "1",
                         "message": "Not enough coins"

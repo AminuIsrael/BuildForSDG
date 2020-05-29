@@ -50,7 +50,7 @@ class UserTrasactionHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id = models.TextField(verbose_name="trans_id",unique=True)
     amount = models.FloatField(verbose_name="CoinAmount")
-    coin_mined = models.FloatField(verbose_name="Coinmined")
+    coin_mined_amount = models.FloatField(verbose_name="CoinminedAmount",default=0)
     transaction = models.TextField(max_length=10,verbose_name="Transactions")
     date_added = models.DateTimeField(default=timezone.now)
     

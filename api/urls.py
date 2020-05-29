@@ -11,5 +11,6 @@ urlpatterns = [
     path('api/v1/leaderboard',views.LeadBoard),
     path('api/v1/profile',views.user_profile),
     path('api/v1/wallet',views.wallet_details),
-    path('api/v1/redeem',views.redeemcoins)
+    path('api/v1/redeem',views.redeemcoins),
+    path('api/v1/allocate',views.allocate_coins)
 ]

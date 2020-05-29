@@ -188,7 +188,7 @@ def user_login(request):
         }
     return Response(return_data)
 
-#send email to change password
+
 @api_view(["POST"])
 def password_reset(request):
     try:
@@ -439,7 +439,7 @@ def redeemcoins(request,decrypedToken):
                 user_coins.save()
                 #Save Transaction
                 transaction = UserTrasactionHistory(user=user_data,transaction_id=transactionid,
-                                      amount=toNaira,coin_mined=coins_amount,transaction="Debit")
+                                      amount=coins_amount,coin_mined_amount=toNaira,transaction="Debit")
                 transaction.save()
                 #Add coin to the coin repository
                 return_data = {
@@ -457,33 +457,68 @@ def redeemcoins(request,decrypedToken):
                 
                 
                 
-# @api_view(["POST"])
-# @autentication.token_required
-# def allocate_coins(request,decrypedToken):
-#     try:
-#         coins_allocated = request.data.get("coins_allocated")
-#         #minerid of user to allocate coins to
-#         user_MinerID = request.data.get("")
-#         if coins_allocated != None and coins_allocated != "":
-#             #Check if user is an admin
-#             user_identity = User.objects.get(user_id= decrypedToken['user_id'])
-#             user_role = user_identity.role
-#              if user_role != "agent":
-#                  return_data = {
-#                      "error": "0",
-#                      "message": "Unauthorized User"
-#                  }
-#              else:
-#                  #get user info
-#                  wastecoin_user = UserCoins.objects.get(user__email=user_email)
-#                  if User.objects.filter(email =user_email).exists() == False:
-#                      return_data = {
-#                      "error": "1",
-#                      "message": "User does not exist"
-#                  }
-               
-#      except Exception as e:
-#          return_data = {
-#              "error": "3",
-#              "message": "An error occured"
-#          }
+@api_view(["POST"])
+@autentication.token_required
+def allocate_coins(request,decrypedToken):
+    try:
+        coins_allocated = float(request.data.get("coins_allocated",None))
+        user_MinerID = request.data.get("miner_id",None)
+        field = [coins_allocated,user_MinerID]
+        if field != None and field != "":
+            if LeaderBoard.objects.filter(minerID=user_MinerID).exists() == False:
+                return_data = {
+                    "error": "1",
+                    "message": "User does not exist"
+                    
+                    }
+                
+            elif User.objects.get(user_id= decrypedToken['user_id']).role != "agent":
+                return_data = {
+                    "error": "0",
+                    "message": "Unauthorized User"
+                    
+                    }
+            else:
+                agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"]).allocateWasteCoin
+                if coins_allocated < agent_coins:
+                    return_data = {
+                        "error": "1",
+                        "message": "Not enough coins"
+                    }
+                else:
+                    wastecoin_user = LeaderBoard.objects.get(minerID=user_MinerID)
+                    user = wastecoin_user.user
+                    agent_user = User.objects.get(user_id= decrypedToken['user_id'])
+                    agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])
+                    user_coins = UserCoins.objects.get(user__user_id=user.user_id)
+                    string_generator.alphanumeric(15)
+                    #allocate Coin to user
+                    remaining_coins =agent_coins.allocateWasteCoin - coins_allocated
+                    agent_coins.allocateWasteCoin = remaining_coins
+                    #Debit_agent
+                    withdrawl= UserTrasactionHistory(user=agent_user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
+                                                     coin_mined_amount=0,transaction="Debit")
+                    agent_coins.save()
+                    withdrawl.save()
+                    #credit User
+                    add_coins = user_coins.allocateWasteCoin + coins_allocated
+                    user_coins.allocateWasteCoin = add_coins
+                    allocate = UserTrasactionHistory(user=user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
+                                                     coin_mined_amount=0,transaction="Credit")
+                    user_coins.save()
+                    allocate.save()
+                    return_data = {
+                        "error": "0",
+                        "message": f"Successful,Coin allocated to {user_MinerID}"
+                    }
+        else:
+            return_data = {
+                "error": "1",
+                "message": "Invalid Parameters"
+            }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": str(e)
+            }
+    return Response(return_data)

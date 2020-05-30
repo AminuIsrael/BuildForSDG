@@ -1,10 +1,14 @@
-import jwt
 import datetime
+
+import jwt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.models import User,otp,UserCoins,LeaderBoard,UserTrasactionHistory
+
+from api.models import LeaderBoard, User, UserCoins, UserTrasactionHistory, otp
+from CustomCode import (autentication, fixed_var, password_functions,
+                        send_email, string_generator, validator)
 from wasteCoin import settings
-from CustomCode import string_generator,password_functions,validator,autentication,send_email,fixed_var
+
 
 # Create your views here.
 @api_view(['GET'])
@@ -480,7 +484,7 @@ def allocate_coins(request,decrypedToken):
                     }
             else:
                 agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"]).allocateWasteCoin
-                if coins_allocated < agent_coins:
+                if coins_allocated > agent_coins:
                     return_data = {
                         "error": "1",
                         "message": "Not enough coins"

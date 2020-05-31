@@ -6,8 +6,8 @@ from wasteCoin import settings
 def token_required(something):
     def wrap(request):
         try:
-            if request.META['HTTP_TOKEN'] != '' and request.META['HTTP_TOKEN'] != None:
-                token_passed = request.META['HTTP_TOKEN']
+            if request.GET.get('token') != '' and request.GET.get('token') != None:
+                token_passed = request.GET.get('token')
                 try:
                     data = jwt.decode(token_passed,settings.SECRET_KEY, algorithms=['HS256'])
                     return something(request,data)

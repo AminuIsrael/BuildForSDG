@@ -320,14 +320,14 @@ def Dashboard(request,decrypedToken):
 @api_view(["GET"])
 def LeadBoard(request):
     try:
-        WasteCoinBoard = LeaderBoard.objects.all().order_by('-minedCoins')
+        WasteCoinBoard = LeaderBoard.objects.all().order_by('minedCoins')
         i = 0
         topCoinsMined = []
         numberOfUsers = 5
         while i < numberOfUsers:
             topUsers = {
                 "miner_id": WasteCoinBoard[i].minerID,
-                "CoinMined": WasteCoinBoard[i].minedCoins
+                "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 
             }
             topCoinsMined.append(topUsers)
             i += 1

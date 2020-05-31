@@ -265,7 +265,7 @@ def password_change(request,decrypedToken):
         }
     return Response(return_data)
 
-@api_view(["POST"])
+@api_view(["GET"])
 @autentication.token_required
 def Dashboard(request,decrypedToken):
     try:

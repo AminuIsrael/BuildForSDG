@@ -26,6 +26,8 @@ SECRET_KEY = '5cg7wne%bp$bb4h)$em5d6r=%1$d=$3xl4*dqkh*$as5igon5+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+CORS_ORIGIN_ALLOW_ALL =True
+
 ALLOWED_HOSTS = [
     "*"
 ]
@@ -41,9 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',
     'api',
-    'coverage'
+    'coverage',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -76,7 +78,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'wasteCoin.wsgi.application'
-CORS_ORIGIN_ALLOW_ALL =True
 
 
 # Database

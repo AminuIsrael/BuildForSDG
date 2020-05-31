@@ -64,7 +64,7 @@ def user_registration(request):
                 user_Board.save()
                 #Save Transaction Details
                 user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
-                                                        amount=0,coin_mined=0,transaction="Credit")
+                                                        amount=0,coin_mined_amount=0,transaction="Credit")
                 user_transaction.save()
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
@@ -208,7 +208,6 @@ def password_reset(request):
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.password_reset_code = generate_pin
                 user_data.save()
-                #send_email.send_email('WasteCoin Reset Password',emailAddress,' Hello ' + "\nYour Reset Password code is: \n " +generate_pin + " \nUse this code to verify your registration. WasteCoin will never ask you to share this code with anyone."+ "\n\n Yours Sincerely," + "\n The WasteCoin Team.")
                 return_data = {
                     "error": "0",
                     "message": "Successful, Email sent",

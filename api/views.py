@@ -4,7 +4,7 @@ import jwt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.models import LeaderBoard, User, UserCoins, UserTrasactionHistory, otp
+from api.models import User, UserCoins, UserTrasactionHistory, otp
 from CustomCode import (autentication, fixed_var, password_functions,
                         send_email, string_generator, validator)
 from wasteCoin import settings
@@ -57,11 +57,8 @@ def user_registration(request):
                 user_OTP =otp(user=new_userData)
                 user_OTP.save()
                 #Generate default coins
-                user_Coins = UserCoins(user=new_userData,allocateWasteCoin=0,minedCoins=0)
+                user_Coins = UserCoins(user=new_userData,minerID=miner_id,allocateWasteCoin=0,minedCoins=0)
                 user_Coins.save()
-                #add to leaderBoard
-                user_Board = LeaderBoard(user=new_userData,minerID=miner_id)
-                user_Board.save()
                 #Save Transaction Details
                 user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
                                                         amount=0,coin_mined_amount=0,transaction="Credit")
@@ -278,7 +275,7 @@ def Dashboard(request,decrypedToken):
             exchangeRate,changed_rate = rate_exchange,rate_changed
             minedCoins = user_data.minedCoins
             unminedCoins = user_coins - minedCoins
-            miner_id = LeaderBoard.objects.get(user__user_id=user_id).minerID
+            miner_id = UserCoins.objects.get(user__user_id=user_id).minerID
             return_data = {
                 "error": "0",
                 "message": "Sucessfull",
@@ -319,7 +316,7 @@ def Dashboard(request,decrypedToken):
 @api_view(["GET"])
 def LeadBoard(request):
     try:
-        WasteCoinBoard = LeaderBoard.objects.all().order_by('minedCoins')
+        WasteCoinBoard = UserCoins.objects.all().order_by('-minedCoins')
         i = 0
         topCoinsMined = []
         numberOfUsers = 5
@@ -349,7 +346,6 @@ def user_profile(request,decrypedToken):
         userID = decrypedToken['user_id']
         UserInfo = User.objects.get(user_id=userID)
         UserCoin = UserCoins.objects.get(user__user_id=userID)
-        UserMine = LeaderBoard.objects.get(user__user_id=userID)
         return_data = {
             "error": "0",
             "message": "Successfull",
@@ -371,7 +367,7 @@ def user_profile(request,decrypedToken):
                     ],
                     "user_coins": [
                         {
-                            "miner_id": f"{UserMine.minerID}",
+                            "miner_id": f"{UserCoin.minerID}",
                             "allocatedCoin": f"{UserCoin.allocateWasteCoin}",
                             "minedcoins": f"{UserCoin.minedCoins}"
                         }
@@ -468,7 +464,7 @@ def allocate_coins(request,decrypedToken):
         user_MinerID = request.data.get("miner_id",None)
         field = [coins_allocated,user_MinerID]
         if field != None and field != "":
-            if LeaderBoard.objects.filter(minerID=user_MinerID).exists() == False:
+            if UserCoins.objects.filter(minerID=user_MinerID).exists() == False:
                 return_data = {
                     "error": "1",
                     "message": "User does not exist"
@@ -489,7 +485,7 @@ def allocate_coins(request,decrypedToken):
                         "message": "Not enough coins"
                     }
                 else:
-                    wastecoin_user = LeaderBoard.objects.get(minerID=user_MinerID)
+                    wastecoin_user = UserCoins.objects.get(minerID=user_MinerID)
                     user = wastecoin_user.user
                     agent_user = User.objects.get(user_id= decrypedToken['user_id'])
                     agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])

@@ -473,7 +473,7 @@ def allocate_coins(request,decrypedToken):
                 
             elif User.objects.get(user_id= decrypedToken['user_id']).role != "agent":
                 return_data = {
-                    "error": "0",
+                    "error": "2",
                     "message": "Unauthorized User"
                     
                     }
@@ -481,7 +481,7 @@ def allocate_coins(request,decrypedToken):
                 agent_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"]).allocateWasteCoin
                 if coins_allocated > agent_coins:
                     return_data = {
-                        "error": "1",
+                        "error": "2",
                         "message": "Not enough coins"
                     }
                 else:
@@ -512,7 +512,7 @@ def allocate_coins(request,decrypedToken):
                     }
         else:
             return_data = {
-                "error": "1",
+                "error": "2",
                 "message": "Invalid Parameters"
             }
     except Exception as e:

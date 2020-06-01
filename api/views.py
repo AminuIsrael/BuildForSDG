@@ -413,7 +413,6 @@ def wallet_details(request,decrypedToken):
             "current_balance": f"{user_coins.allocateWasteCoin}",
             "transaction_history": trasactions
         }
-        
     except Exception as e:
         return_data = {
             "error": "3",
@@ -425,34 +424,46 @@ def wallet_details(request,decrypedToken):
 @autentication.token_required
 def redeemcoins(request,decrypedToken):
     try:
-        coins_amount = float(request.data.get("amount"))
+        coins_amount = request.data.get("amount")
         if coins_amount is not None and coins_amount is not "":
-            user_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])
-            exchange_rate = fixed_var.exchange_rate
-            numofCoins = user_coins.allocateWasteCoin
-            user_data = User.objects.get(user_id=decrypedToken["user_id"])
-            if coins_amount > numofCoins:
+            coins_amount = float(coins_amount)
+            if coins_amount == float(0) or coins_amount < float(0):
                 return_data = {
-                    "error": "1",
-                    "message": "Not enough coins"
+                    "error": 2,
+                    "message": "Number is negative or zero"
                 }
             else:
-                transactionid = string_generator.alphanumeric(15)
-                toNaira = exchange_rate * coins_amount
-                user_coins.allocateWasteCoin = numofCoins - coins_amount
-                user_coins.minedCoins = coins_amount
-                user_coins.save()
-                #Save Transaction
-                transaction = UserTrasactionHistory(user=user_data,transaction_id=transactionid,
+                user_coins = UserCoins.objects.get(user__user_id=decrypedToken["user_id"])
+                exchange_rate = fixed_var.exchange_rate
+                numofCoins = user_coins.allocateWasteCoin
+                user_data = User.objects.get(user_id=decrypedToken["user_id"])
+                if coins_amount > numofCoins:
+                    return_data = {
+                        "error": "1",
+                        "message": "Not enough coins"
+                    }
+                else:
+                    transactionid = string_generator.alphanumeric(15)
+                    toNaira = exchange_rate * coins_amount
+                    user_coins.allocateWasteCoin = numofCoins - coins_amount
+                    user_coins.minedCoins = coins_amount
+                    user_coins.save()
+                    #Save Transaction
+                    transaction = UserTrasactionHistory(user=user_data,transaction_id=transactionid,
                                       amount=coins_amount,coin_mined_amount=toNaira,transaction="Debit")
-                transaction.save()
-                #Add coin to the coin repository
-                return_data = {
-                    "error": "0",
-                    "message": "Successful, Coin Mined",
-                    "transaction_id": f"{transactionid}",
-                    "amount": f"{toNaira}"
-                }
+                    transaction.save()
+                    #Add coin to the coin repository
+                    return_data = {
+                        "error": "0",
+                        "message": "Successful, Coin Mined",
+                        "transaction_id": f"{transactionid}",
+                        "amount": f"{toNaira}"
+                    }
+        else:
+            return_data = {
+                "error": 2,
+                "message": "Invalid Parameter"
+            }
     except Exception as e:
         return_data = {
             "error": "3",

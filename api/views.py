@@ -276,6 +276,17 @@ def Dashboard(request,decrypedToken):
             minedCoins = user_data.minedCoins
             unminedCoins = user_coins - minedCoins
             miner_id = UserCoins.objects.get(user__user_id=user_id).minerID
+            WasteCoinBoard = UserCoins.objects.all().order_by('-minedCoins')
+            i = 0
+            topCoinsMined = []
+            numberOfUsers = 5
+            while i < len(WasteCoinBoard):
+                topUsers = {
+                    "miner_id": WasteCoinBoard[i].minerID,
+                    "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 
+                }
+                topCoinsMined.append(topUsers)
+                i += 1
             return_data = {
                 "error": "0",
                 "message": "Sucessfull",
@@ -292,12 +303,7 @@ def Dashboard(request,decrypedToken):
                             }
                         ],
                         "totalWasteCoinMined": minedCoins,
-                        "leaderBoard":[
-                            {
-                                "minerId": miner_id,
-                                "wasteCoinsMined": minedCoins
-                            }
-                        ]
+                        "leaderBoard": topCoinsMined
                     }
                 ]
             }
@@ -319,8 +325,8 @@ def LeadBoard(request):
         WasteCoinBoard = UserCoins.objects.all().order_by('-minedCoins')
         i = 0
         topCoinsMined = []
-        numberOfUsers = 5
-        while i < numberOfUsers:
+        numberOfUsers = 2
+        while i < len(WasteCoinBoard):
             topUsers = {
                 "miner_id": WasteCoinBoard[i].minerID,
                 "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 

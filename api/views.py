@@ -410,8 +410,13 @@ def wallet_details(request,decrypedToken):
         return_data = {
             "error": "0",
             "message": "Successfull",
-            "current_balance": f"{user_coins.allocateWasteCoin}",
-            "transaction_history": trasactions
+            "data": [
+                {
+                  "current_balance": f"{user_coins.allocateWasteCoin}",
+                  "transaction_history": trasactions  
+                }
+            ]
+            
         }
     except Exception as e:
         return_data = {

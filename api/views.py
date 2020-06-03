@@ -4,7 +4,7 @@ import jwt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.models import User, UserCoins, UserTrasactionHistory, otp
+from api.models import User, UserCoins, UserTrasactionHistory, otp, AccountDetails
 from CustomCode import (autentication, fixed_var, password_functions,
                         send_email, string_generator, validator)
 from wasteCoin import settings
@@ -63,9 +63,11 @@ def user_registration(request):
                 user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
                                                         amount=0,coin_mined_amount=0,transaction="Credit")
                 user_transaction.save()
+                role = User.objects.get(user_id=userRandomId).role
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
+                           "role": role,
                            "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
                 return_data = {
@@ -107,6 +109,7 @@ def user_login(request):
                     #Generate token
                     timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
+                               "role": user_data.role,
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
                     if is_valid_password:
@@ -261,37 +264,6 @@ def password_change(request,decrypedToken):
         }
     return Response(return_data)
 
-@api_view(["POST"])
-@autentication.token_required
-def changepassword(request,decrypedToken):
-    try:
-        old_password = request.data.get("old_password",None)
-        new_password = request.data.get("new_password",None)
-        field = [old_password,new_password]
-        if field is not None and field is not "":
-            user_data = User.objects.get(user_id=decrypedToken["user_id"])
-            is_valid_password = password_functions.check_password_match(old_password,user_data.user_password)
-            if is_valid_password == False:
-                return_data = {
-                    "error": "2",
-                    "message": "Password is Incorrect"
-                }
-            else:
-                #decrypt password
-                encryptpassword = password_functions.generate_password_hash(new_password)
-                user_data.user_password = encryptpassword
-                user_data.save()
-                return_data = {
-                    "error": "0",
-                    "message": "Successfull, Password Changed"
-                }   
-    except Exception as e:
-        return_data = {
-                "error": "3",
-                "message": str(e)
-        }
-    return Response(return_data)
-
 @api_view(["GET"])
 @autentication.token_required
 def Dashboard(request,decrypedToken):
@@ -318,25 +290,35 @@ def Dashboard(request,decrypedToken):
                 }
                 topCoinsMined.append(topUsers)
                 i += 1
-            return_data = {
-                "error": "0",
-                "message": "Sucessfull",
-                "data": [
-                    {
-                        "allocatedWasteCoin": user_coins,
-                        "month": month,
-                        "exchangeRate": exchangeRate,
-                        "changedRate": changed_rate,
-                        "summary": [
-                            {
+            if decrypedToken['role'] == "user": 
+                return_data = {
+                    "error": "0",
+                    "message": "Sucessfull",
+                    "data": 
+                        {
+                            "allocatedWasteCoin": user_coins,
+                            "month": month,
+                            "exchangeRate": exchangeRate,
+                            "changedRate": changed_rate,
+                            "summary": {
                                 "mined": minedCoins,
                                 "unMined": unminedCoins
-                            }
-                        ],
-                        "totalWasteCoinMined": minedCoins,
-                        "leaderBoard": topCoinsMined
+                            },
+                            "totalWasteCoinMined": minedCoins,
+                            "leaderBoard": topCoinsMined
                     }
-                ]
+            }
+            else:
+                return_data = {
+                    "error": "0",
+                    "message": "Sucessfull",
+                    "data": 
+                        {
+                            "allocatedWasteCoin": user_coins,
+                            "month": month,
+                            "exchangeRate": exchangeRate,
+                            "changedRate": changed_rate
+                    }
             }
         else:
             return_data = {
@@ -513,7 +495,7 @@ def allocate_coins(request,decrypedToken):
         coins_allocated = float(request.data.get("coins_allocated",None))
         user_MinerID = request.data.get("miner_id",None)
         field = [coins_allocated,user_MinerID]
-        if field != None and field != "":
+        if not None in field and not "" in field:
             if UserCoins.objects.filter(minerID=user_MinerID).exists() == False:
                 return_data = {
                     "error": "1",
@@ -571,3 +553,95 @@ def allocate_coins(request,decrypedToken):
             "message": str(e)
             }
     return Response(return_data)
+
+
+@api_view(["POST"])
+@autentication.token_required
+def changepassword(request,decryptedToken):
+    try:
+        old_password = request.data.get("old_password",None)
+        new_password = request.data.get("new_password",None)
+        field = [old_password,new_password]
+        if not None in field and not "" in field:
+            user_data = User.objects.get(user_id=decryptedToken["user_id"])
+            is_valid_password = password_functions.check_password_match(old_password,user_data.user_password)
+            if is_valid_password == False:
+                return_data = {
+                    "error": "2",
+                    "message": "Password is Incorrect"
+                }
+            else:
+                #decrypt password
+                encryptpassword = password_functions.generate_password_hash(new_password)
+                user_data.user_password = encryptpassword
+                user_data.save()
+                return_data = {
+                    "error": "0",
+                    "message": "Successfull, Password Changed"
+                }   
+    except Exception as e:
+        return_data = {
+                "error": "3",
+                "message": str(e)
+        }
+    return Response(return_data)
+
+@api_view(["PUT"])
+@autentication.token_required
+def update_info(request,decryptedToken):
+    try:
+        address = request.data.get("address",None)
+        state = request.data.get("state",None)
+        user_lga = request.data.get("lga",None)
+        field = [address,state,user_lga]
+        if not None in field and not "" in field:
+            user_data = User.objects.get(user_id=decryptedToken["user_id"])
+            user_data.user_address = address
+            user_data.user_state = state
+            user_data.user_LGA = user_lga
+            user_data.save()
+            return_data = {
+                "error": "0",
+                "message": "Successfully Updated"
+            }
+        else:
+            return_data = {
+                "error": "2",
+                "message": "Invalid Parameter"
+            }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": "An error occured"
+        }
+    return Response(return_data)
+
+@api_view(["POST"])
+@autentication.token_required
+def account_details(request,decryptedToken):
+    try:
+        accountName = request.data.get("account_name",None)
+        accountNumber = request.data.get("account_number",None)
+        bankName = request.data.get("bank_name",None)
+        field = [accountName,accountNumber,bankName]
+        if not None in field and not "" in field:
+            user_data = User.objects.get(user_id=decryptedToken['user_id'])
+            user_account = AccountDetails(user=user_data,account_name=accountName,
+                                          account_number=accountNumber,bank_name=bankName)
+            user_account.save()
+            return_data = {
+                "error": "0",
+                "message": "Account saved successfully"
+            }
+        else:
+            return_data = {
+                "error": "2",
+                "message": "Invalid Parameter"
+            }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": "An error occured"
+        }
+    return Response(return_data)
+

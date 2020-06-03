@@ -14,4 +14,6 @@ urlpatterns = [
     path('api/v1/redeem',views.redeemcoins),
     path('api/v1/allocate',views.allocate_coins),
     path('api/v1/change_password',views.changepassword),
+    path('api/v1/update_info',views.update_info),
+    path('api/v1/account_details',views.account_details)
 ]

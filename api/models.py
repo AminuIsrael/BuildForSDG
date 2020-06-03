@@ -46,4 +46,12 @@ class UserTrasactionHistory(models.Model):
     coin_mined_amount = models.FloatField(verbose_name="CoinminedAmount",default=0)
     transaction = models.TextField(max_length=10,verbose_name="Transactions")
     date_added = models.DateTimeField(default=timezone.now)
-    
+
+class AccountDetails(models.Model):
+    class Meta:
+        db_table = "Account Details"
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    account_name = models.TextField(max_length=150,unique=True,verbose_name="Account Name")
+    account_number = models.TextField(max_length=150,unique=True,verbose_name="Account Number")
+    bank_name = models.TextField(max_length=150,verbose_name="Bank Name")
+    date_added = models.DateTimeField(default=timezone.now)

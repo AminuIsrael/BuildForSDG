@@ -355,10 +355,8 @@ def user_profile(request,decrypedToken):
         return_data = {
             "error": "0",
             "message": "Successfull",
-            "user_data": [
-                {
-                    "user_details": [
-                        {
+            "data": {
+                    "user_details": {
                             "first_name": f"{UserInfo.firstname}",
                             "last_name": f"{UserInfo.lastname}",
                             "email": f"{UserInfo.email}",
@@ -370,16 +368,15 @@ def user_profile(request,decrypedToken):
                             "country": f"{UserInfo.user_country}"
                               
                         }
-                    ],
-                    "user_coins": [
-                        {
+                    ,
+                    "user_coins": {
                             "miner_id": f"{UserCoin.minerID}",
                             "allocatedCoin": f"{UserCoin.allocateWasteCoin}",
                             "minedcoins": f"{UserCoin.minedCoins}"
                         }
-                    ]
+                    
                 }
-            ]
+            
         }
         
     except Exception as e:

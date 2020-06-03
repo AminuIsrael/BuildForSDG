@@ -227,8 +227,8 @@ def password_reset(request):
 @autentication.token_required
 def password_change(request,decrypedToken):
     try:
-        reset_code = request.data.get("reset_code")
-        new_password = request.data.get("new_password")
+        reset_code = request.data.get("reset_code",None)
+        new_password = request.data.get("new_password",None)
         fields = [reset_code,new_password]
         if not None in fields and not "" in fields:
             #get user info
@@ -258,6 +258,37 @@ def password_change(request,decrypedToken):
         return_data = {
             "error": "3",
             "message": str(e)
+        }
+    return Response(return_data)
+
+@api_view(["POST"])
+@autentication.token_required
+def changepassword(request,decrypedToken):
+    try:
+        old_password = request.data.get("old_password",None)
+        new_password = request.data.get("new_password",None)
+        field = [old_password,new_password]
+        if field is not None and field is not "":
+            user_data = User.objects.get(user_id=decrypedToken["user_id"])
+            is_valid_password = password_functions.check_password_match(old_password,user_data.user_password)
+            if is_valid_password == False:
+                return_data = {
+                    "error": "2",
+                    "message": "Password is Incorrect"
+                }
+            else:
+                #decrypt password
+                encryptpassword = password_functions.generate_password_hash(new_password)
+                user_data.user_password = encryptpassword
+                user_data.save()
+                return_data = {
+                    "error": "0",
+                    "message": "Successfull, Password Changed"
+                }   
+    except Exception as e:
+        return_data = {
+                "error": "3",
+                "message": str(e)
         }
     return Response(return_data)
 
@@ -319,6 +350,7 @@ def Dashboard(request,decrypedToken):
         }
     return Response(return_data)
 
+#Check leaderboard
 @api_view(["GET"])
 def LeadBoard(request):
     try:
@@ -424,7 +456,7 @@ def wallet_details(request,decrypedToken):
 @autentication.token_required
 def redeemcoins(request,decrypedToken):
     try:
-        coins_amount = request.data.get("amount")
+        coins_amount = request.data.get("amount",None)
         if coins_amount is not None and coins_amount is not "":
             coins_amount = float(coins_amount)
             if coins_amount == float(0) or coins_amount < float(0):

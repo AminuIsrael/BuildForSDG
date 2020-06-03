@@ -7,3 +7,4 @@ django-heroku==0.3.1
 django-cors-headers==3.2.1
 PyJWT==1.7.1 
 coverage==5.1
+twilio==6.41.0 

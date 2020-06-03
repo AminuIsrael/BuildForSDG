@@ -397,7 +397,8 @@ def user_profile(request,decrypedToken):
                             "address": f"{UserInfo.user_address}",
                             "state": f"{UserInfo.user_state}",
                             "LGA": f"{UserInfo.user_LGA}",
-                            "country": f"{UserInfo.user_country}"
+                            "country": f"{UserInfo.user_country}",
+                            "role": f"{UserInfo.role}"
                               
                         }
                     ,

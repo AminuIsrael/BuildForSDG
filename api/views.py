@@ -190,7 +190,7 @@ def user_login(request):
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     #Generate token
-                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
+                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "role": user_data.role,
                                "exp":timeLimit}
@@ -238,7 +238,7 @@ def user_login(request):
                     is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     #Generate token
-                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
+                    timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
@@ -732,7 +732,7 @@ def update_info(request,decryptedToken):
         }
     return Response(return_data)
 
-@api_view(["POST"])
+@api_view(["POST","PUT"])
 @autentication.token_required
 def account_details(request,decryptedToken):
     try:
@@ -742,19 +742,35 @@ def account_details(request,decryptedToken):
         field = [accountName,accountNumber,bankName]
         if not None in field and not "" in field:
             user_data = User.objects.get(user_id=decryptedToken['user_id'])
-            user_account = AccountDetails(user=user_data,account_name=accountName,
-                                          account_number=accountNumber,bank_name=bankName)
-            user_account.save()
-            return_data = {
-                "error": "0",
-                "message": "Account saved successfully",
-                "data": {
-                    "account_name": accountName,
-                    "account_number": accountNumber,
-                    "bank_name": bankName
+            if AccountDetails.objects.filter(user__user_id=decryptedToken['user_id']).exists():
+                user_account = AccountDetails.objects.get(user__user_id=decryptedToken['user_id'])
+                user_account.account_number = accountNumber
+                user_account.account_name = accountName
+                user_account.bank_name = bankName
+                user_account.save()
+                return_data = {
+                    "error": "0",
+                    "message": "Account saved successfully",
+                    "data": {
+                        "account_name": accountName,
+                        "account_number": accountNumber,
+                        "bank_name": bankName
+                    }
                 }
-            }
-        else:
+            else:
+                user_account = AccountDetails(user=user_data,account_name=accountName,
+                                              account_number=accountNumber,bank_name=bankName)
+                user_account.save()
+                return_data = {
+                    "error": "0",
+                    "message": "Account saved successfully",
+                    "data": {
+                        "account_name": accountName,
+                        "account_number": accountNumber,
+                        "bank_name": bankName
+                    }
+                }
+        else:   
             return_data = {
                 "error": "2",
                 "message": "Invalid Parameter"

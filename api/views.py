@@ -461,6 +461,21 @@ def user_profile(request,decrypedToken):
         userID = decrypedToken['user_id']
         UserInfo = User.objects.get(user_id=userID)
         UserCoin = UserCoins.objects.get(user__user_id=userID)
+        #verify if user have account 
+        account_info = AccountDetails.objects.filter(user__user_id=decrypedToken['user_id']).exists()
+        if account_info == True:
+            account = AccountDetails.objects.get(user__user_id=decrypedToken['user_id']) 
+            account_details = {
+                "account_name": account.account_name,
+                "account_number": account.account_number,
+                "bank_name": account.bank_name
+            }
+        else:
+            account_details = {
+                "account_name": "null",
+                "account_number": "null",
+                "bank_name": "null"
+            }
         return_data = {
             "error": "0",
             "message": "Successfull",
@@ -483,7 +498,8 @@ def user_profile(request,decrypedToken):
                             "miner_id": f"{UserCoin.minerID}",
                             "allocatedCoin": f"{UserCoin.allocateWasteCoin}",
                             "minedcoins": f"{UserCoin.minedCoins}"
-                        }
+                        },
+                    "account_information": account_details
                     
                 }
             
@@ -697,7 +713,12 @@ def update_info(request,decryptedToken):
             user_data.save()
             return_data = {
                 "error": "0",
-                "message": "Successfully Updated"
+                "message": "Successfully Updated",
+                "data": {
+                    "address": address,
+                    "state": state,
+                    "lga": user_data
+                }
             }
         else:
             return_data = {
@@ -726,7 +747,12 @@ def account_details(request,decryptedToken):
             user_account.save()
             return_data = {
                 "error": "0",
-                "message": "Account saved successfully"
+                "message": "Account saved successfully",
+                "data": {
+                    "account_name": accountName,
+                    "account_number": accountNumber,
+                    "bank_name": bankName
+                }
             }
         else:
             return_data = {

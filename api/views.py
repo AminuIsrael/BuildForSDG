@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from api.models import User, UserCoins, UserTrasactionHistory, otp, AccountDetails
 from CustomCode import (autentication, fixed_var, password_functions,
-                        send_email, string_generator, validator)
+                        send_email, string_generator, validator,sms)
 from wasteCoin import settings
 
 
@@ -43,7 +43,6 @@ def user_registration(request):
                 #generate user_id
                 userRandomId = string_generator.alphanumeric(20)
                 miner_id = string_generator.numeric(7)
-                user_token = string_generator.alphanumeric(50)
                 transactionid = string_generator.alphanumeric(15)
                 #encrypt password
                 encryped_password = password_functions.generate_password_hash(password)
@@ -53,8 +52,10 @@ def user_registration(request):
                                 user_password=encryped_password,user_address=address,
                                 user_state=state,user_LGA=lga,user_country=country)
                 new_userData.save()
+                #Generate OTP
+                code = string_generator.numeric(6)
                 #Save OTP
-                user_OTP =otp(user=new_userData)
+                user_OTP =otp(user=new_userData,otp_code=code)
                 user_OTP.save()
                 #Generate default coins
                 user_Coins = UserCoins(user=new_userData,minerID=miner_id,allocateWasteCoin=0,minedCoins=0)
@@ -70,9 +71,11 @@ def user_registration(request):
                            "role": role,
                            "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
+                message = f"Welcome to WasteCoin, your verification code is {code}"
+                sms.sendsms(phoneNumber[1:],message)
                 return_data = {
                     "error": "0",
-                    "message": "The registration was successful",
+                    "message": "The registration was successful, A verrification SMS has been sent",
                     "token": f"{token.decode('UTF-8')}",
                     "elapsed_time": f"{timeLimit}",
                     }
@@ -87,6 +90,85 @@ def user_registration(request):
             "message": str(e)
         }
     return Response(return_data)
+
+#User verfication
+@api_view(["POST"])
+@autentication.token_required
+def user_verification(request,decrypedToken):
+    try:
+        otp_entered = request.data.get("otp",None)
+        if otp_entered != None and otp_entered != "":
+            user_data = otp.objects.get(user__user_id=decrypedToken['user_id'])
+            otpCode,date_added = user_data.otp_code,user_data.date_added
+            date_now = datetime.datetime.now(datetime.timezone.utc)
+            duration = float((date_now - date_added).total_seconds())
+            timeLimit = 1800.0 #30 mins interval
+            if otp_entered == otpCode and duration < timeLimit:
+                #validate user
+                user_data.validated = True
+                user_data.save()
+                return_data = {
+                    "error": "0",
+                    "message":"User Verified"
+                }
+            elif otp_entered != otpCode and duration < timeLimit:
+                return_data = {
+                    "error": "1",
+                    "message": "Incorrect OTP"
+                }
+            elif otp_entered == otpCode and duration > timeLimit:
+                user_data.save()
+                return_data = {
+                    "error": "1",
+                    "message": "OTP has expired"
+                }
+        else:
+            return_data = {
+                "error": "2",
+                "message": "Invalid Parameters"
+            }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)
+
+#resend OTP
+@api_view(["POST"])
+def resend_otp(request):
+    try:
+        phone_number = request.data.get('phone_number',None)
+        if phone_number != None and phone_number != "":
+            if User.objects.filter(user_phone =phone_number).exists() == False:
+                    return_data = {
+                        "error": "1",
+                        "message": "User does not exist"
+                    }
+            else:
+                user_data = otp.objects.get(user__user_phone=phone_number)
+                #generate new otp
+                code = string_generator.numeric(6)
+                user_data.otp_code = code
+                user_data.save()
+                message = f"Welcome to WasteCoin, your verification code is {code}"
+                sms.sendsms(phone_number[1:],message)
+                return_data = {
+                    "error": "0",
+                    "message": "OTP sent to phone number"
+                }
+        else:
+            return_data = {
+                "error": "2",
+                "message": "Invalid Parameters"
+            }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": str(e)
+        }
+    return Response(return_data)
+
 
 #User login
 @api_view(["POST"])
@@ -106,13 +188,14 @@ def user_login(request):
                 else:
                     user_data = User.objects.get(email=email_phone)
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
+                    is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     #Generate token
                     timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "role": user_data.role,
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
-                    if is_valid_password:
+                    if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
                             "message": "Successfull",
@@ -133,6 +216,11 @@ def user_login(request):
                                 }
                             ]
                             
+                        }
+                    elif is_verified == False:
+                        return_data = {
+                            "error" : "1",
+                            "message": "User is not verified"
                         }
                     else:
                         return_data = {
@@ -147,13 +235,14 @@ def user_login(request):
                     }
                 else:
                     user_data = User.objects.get(user_phone=email_phone)
+                    is_verified = otp.objects.get(user__user_phone=user_data.user_phone).validated
                     is_valid_password = password_functions.check_password_match(password,user_data.user_password)
                     #Generate token
                     timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
-                    if is_valid_password:
+                    if is_valid_password and is_verified:
                         return_data = {
                             "error": "0",
                             "message": "Successfull",
@@ -174,6 +263,11 @@ def user_login(request):
                                 }
                             ]
                             
+                        }
+                    elif is_verified == False:
+                        return_data = {
+                            "error" : "1",
+                            "message": "User is not verified"
                         }
                     else:
                         return_data = {
@@ -644,4 +738,3 @@ def account_details(request,decryptedToken):
             "message": "An error occured"
         }
     return Response(return_data)
-

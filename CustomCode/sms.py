@@ -8,10 +8,5 @@ verification = Client(account_sid,auth_token)
 twilio_number = "+12025191283"
 
 
-
-
-verification.messages.create(
-                    from_=twilio_number, 
-                    to="+2348130103966",
-                    body='You verification code is: 1234567(This is a test)'                
-                    )
+def sendsms(phone,message):
+    verification.messages.create(from_=twilio_number, to=f"+234{phone}",body=message)

@@ -66,7 +66,7 @@ def user_registration(request):
                 user_transaction.save()
                 role = User.objects.get(user_id=userRandomId).role
                 #Generate token
-                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=120) #set limit for user
+                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
                            "role": role,
                            "exp":timeLimit}
@@ -290,22 +290,23 @@ def user_login(request):
 @api_view(["POST"])
 def password_reset(request):
     try:
-        emailAddress = request.data.get('emailaddress',None)
-        if emailAddress is not None and emailAddress is not "":
-            if User.objects.filter(email =emailAddress).exists() == False:
+        phone_number = request.data.get('phone_number',None)
+        if phone_number is not None and phone_number is not "":
+            if User.objects.filter(user_phone =phone_number).exists() == False:
                 return_data = {
                     "error": "1",
                     "message": "User does not exist"
                 }
             else:
-                user_data = otp.objects.get(user__email=emailAddress)
+                user_data = otp.objects.get(user__user_phone=phone_number)
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.password_reset_code = generate_pin
                 user_data.save()
+                message = f"Welcome to WasteCoin, your password reset code is {generate_pin}"
+                sms.sendsms(phone_number[1:],message)
                 return_data = {
                     "error": "0",
-                    "message": "Successful, Email sent",
-                    "code": f"{generate_pin}"
+                    "message": "Successful, reset code sent to Phone Number",
                 }
         else:
             return_data = {

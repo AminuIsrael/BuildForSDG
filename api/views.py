@@ -706,6 +706,7 @@ def update_info(request,decryptedToken):
         user_lga = request.data.get("lga",None)
         field = [address,state,user_lga]
         if not None in field and not "" in field:
+            print(decryptedToken["user_id"])
             user_data = User.objects.get(user_id=decryptedToken["user_id"])
             user_data.user_address = address
             user_data.user_state = state
@@ -717,7 +718,7 @@ def update_info(request,decryptedToken):
                 "data": {
                     "address": address,
                     "state": state,
-                    "lga": user_data
+                    "lga": user_lga
                 }
             }
         else:

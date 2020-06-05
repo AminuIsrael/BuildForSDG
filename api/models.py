@@ -46,6 +46,7 @@ class UserTrasactionHistory(models.Model):
     transaction_id = models.TextField(verbose_name="trans_id",unique=True)
     amount = models.FloatField(verbose_name="CoinAmount")
     coin_mined_amount = models.FloatField(verbose_name="CoinminedAmount",default=0)
+    coin_allocated_to = models.TextField(verbose_name="Miner_ID",default=0)
     transaction = models.TextField(max_length=10,verbose_name="Transactions")
     date_added = models.DateTimeField(default=timezone.now)
 

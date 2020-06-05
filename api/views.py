@@ -62,7 +62,7 @@ def user_registration(request):
                 user_Coins.save()
                 #Save Transaction Details
                 user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
-                                                        amount=0,coin_mined_amount=0,transaction="Credit")
+                                                        amount=0,coin_mined_amount=0,coin_allocated_to=miner_id,transaction="Credit")
                 user_transaction.save()
                 role = User.objects.get(user_id=userRandomId).role
                 #Generate token
@@ -117,7 +117,6 @@ def user_verification(request,decrypedToken):
                     "message": "Incorrect OTP"
                 }
             elif otp_entered == otpCode and duration > timeLimit:
-                user_data.save()
                 return_data = {
                     "error": "1",
                     "message": "OTP has expired"
@@ -240,6 +239,7 @@ def user_login(request):
                     #Generate token
                     timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
+                               "role": user_data.role,
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
                     if is_valid_password and is_verified:
@@ -298,7 +298,7 @@ def password_reset(request):
                     "message": "User does not exist"
                 }
             else:
-                user_data = otp.objects.get(user__user_phone=phone_number)
+                user_data = otp.objecttransaction_ids.get(user__user_phone=phone_number)
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.password_reset_code = generate_pin
                 user_data.save()
@@ -521,24 +521,42 @@ def wallet_details(request,decrypedToken):
         transaction_history = UserTrasactionHistory.objects.filter(user__user_id=userID)
         numOfTransactions = len(transaction_history)
         trasactions = []
-        i = 0
-        while i < numOfTransactions:
-            perTransaction = {
-                "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),
-                "amount": transaction_history[i].amount,
-                "transaction": transaction_history[i].transaction
-            }
-            trasactions.append(perTransaction)
-            i += 1
-        return_data = {
-            "error": "0",
-            "message": "Successfull",
-            "data": {
-                  "current_balance": f"{user_coins.allocateWasteCoin}",
-                  "transaction_history": trasactions  
+        if decrypedToken["role"] == "user":
+            i = 0
+            while i < numOfTransactions:
+                perTransaction = {
+                    "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),
+                    "amount": transaction_history[i].amount,
+                    "transaction": transaction_history[i].transaction
                 }
-            
-        }
+                trasactions.append(perTransaction)
+                i += 1
+            return_data = {
+                "error": "0",
+                "message": "Successfull",
+                "data": {
+                    "current_balance": f"{user_coins.allocateWasteCoin}",
+                    "transaction_history": trasactions[1:]  
+                }
+            }
+        else:
+            i = 0
+            while i < numOfTransactions:
+                perTransaction = {
+                    "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),
+                    "amount": transaction_history[i].amount,
+                    "miner_id": transaction_history[i].coin_allocated_to
+                }
+                trasactions.append(perTransaction)
+                i +=1
+            return_data = {
+                "error": "0",
+                "message": "Successfull",
+                "data": {
+                    "current_balance": f"{user_coins.allocateWasteCoin}",
+                    "transaction_history": trasactions[1:]
+                }
+            }
     except Exception as e:
         return_data = {
             "error": "3",
@@ -576,7 +594,7 @@ def redeemcoins(request,decrypedToken):
                     user_coins.save()
                     #Save Transaction
                     transaction = UserTrasactionHistory(user=user_data,transaction_id=transactionid,
-                                      amount=coins_amount,coin_mined_amount=toNaira,transaction="Debit")
+                                      amount=coins_amount,coin_mined_amount=toNaira,coin_allocated_to=user_coins.minerID,transaction="Debit")
                     transaction.save()
                     #Add coin to the coin repository
                     return_data = {
@@ -639,14 +657,14 @@ def allocate_coins(request,decrypedToken):
                     agent_coins.allocateWasteCoin = remaining_coins
                     #Debit_agent
                     withdrawl= UserTrasactionHistory(user=agent_user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
-                                                     coin_mined_amount=0,transaction="Debit")
+                                                     coin_mined_amount=0,coin_allocated_to=user_MinerID,transaction="Debit")
                     agent_coins.save()
                     withdrawl.save()
                     #credit User
                     add_coins = user_coins.allocateWasteCoin + coins_allocated
                     user_coins.allocateWasteCoin = add_coins
                     allocate = UserTrasactionHistory(user=user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
-                                                     coin_mined_amount=0,transaction="Credit")
+                                                     coin_mined_amount=0,coin_allocated_to=user_MinerID,transaction="Credit")
                     user_coins.save()
                     allocate.save()
                     return_data = {

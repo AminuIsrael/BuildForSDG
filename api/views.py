@@ -420,8 +420,8 @@ def Dashboard(request,decrypedToken):
                             "totalWasteCoinMined": minedCoins,
                             "totalWasteCoinUnmined": unminedCoins,
                             "summary": {
-                                "mined": percent_of_Usermined_coins,
-                                "unMined": percent_of_Userunmined_coins
+                                "totalWasteCoinMinedPercentage": percent_of_Usermined_coins,
+                                "totalWasteCoinUnMinedPercentage": percent_of_Userunmined_coins
                             },
                             "totalWasteCoinMined": minedCoins,
                             "leaderBoard": topCoinsMined
@@ -447,6 +447,8 @@ def Dashboard(request,decrypedToken):
                         {
                             "allocatedWasteCoin": user_coins,
                             "month": month,
+                            "exchangeRate": exchangeRate,
+                            "changedRate": changed_rate,
                             "totalWasteCoinMined": total_coin_mined,
                             "totalWasteCoinUnmined": total_coin_unmined,
                             "summary": {

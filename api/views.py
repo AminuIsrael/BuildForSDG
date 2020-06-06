@@ -843,3 +843,21 @@ def account_details(request,decryptedToken):
             "message": "An error occured"
         }
     return Response(return_data)
+
+@api_view(["GET"])
+@autentication.token_required
+def user_verification(request,decryptedToken):
+    try:
+        user_id = decryptedToken['user_id']
+        user_validity = otp.objects.get(user__user_id =user_id).validated
+        return_data = {
+            "error": "0",
+            "message": "successful",
+            "validated": f"{user_validity}"
+        }
+    except Exception as e:
+        return_data = {
+            "error": "3",
+            "message": "An error occured"
+        }
+    return Response(return_data)

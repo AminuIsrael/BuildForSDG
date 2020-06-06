@@ -146,15 +146,22 @@ def resend_otp(request):
                     }
             else:
                 user_data = otp.objects.get(user__user_phone=phone_number)
+                user = User.objects.get(user_phone=phone_number)
                 #generate new otp
                 code = string_generator.numeric(6)
                 user_data.otp_code = code
                 user_data.save()
                 message = f"Welcome to WasteCoin, your verification code is {code}"
                 sms.sendsms(phone_number[1:],message)
+                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
+                payload = {"user_id": f'{user.user_id}',
+                               "role": user.role,
+                               "exp":timeLimit}
+                token = jwt.encode(payload,settings.SECRET_KEY)
                 return_data = {
                     "error": "0",
-                    "message": "OTP sent to phone number"
+                    "message": "OTP sent to phone number",
+                    "token": token.decode('UTF-8')
                 }
         else:
             return_data = {
@@ -219,7 +226,8 @@ def user_login(request):
                     elif is_verified == False:
                         return_data = {
                             "error" : "1",
-                            "message": "User is not verified"
+                            "message": "User is not verified",
+                            "token": token.decode('UTF-8')
                         }
                     else:
                         return_data = {
@@ -267,7 +275,8 @@ def user_login(request):
                     elif is_verified == False:
                         return_data = {
                             "error" : "1",
-                            "message": "User is not verified"
+                            "message": "User is not verified",
+                            "token": token.decode('UTF-8')
                         }
                     else:
                         return_data = {
@@ -299,14 +308,21 @@ def password_reset(request):
                 }
             else:
                 user_data = otp.objects.get(user__user_phone=phone_number)
+                user = User.objects.get(user_phone=phone_number)
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.password_reset_code = generate_pin
                 user_data.save()
                 message = f"Welcome to WasteCoin, your password reset code is {generate_pin}"
                 sms.sendsms(phone_number[1:],message)
+                timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
+                payload = {"user_id": f'{user.user_id}',
+                               "role": user.role,
+                               "exp":timeLimit}
+                token = jwt.encode(payload,settings.SECRET_KEY)
                 return_data = {
                     "error": "0",
                     "message": "Successful, reset code sent to Phone Number",
+                    "token": token.decode('UTF-8')
                 }
         else:
             return_data = {

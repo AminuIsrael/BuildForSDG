@@ -422,8 +422,8 @@ def Dashboard(request,decrypedToken):
                             "allocatedWasteCoin": user_coins,
                             "month": month,
                             "summary": {
-                                "mined": total_coin_mined,
-                                "unmined": total_coin_unmined
+                                "totalWasteCoinMined": total_coin_mined,
+                                "totalWasteCoinUnMined": total_coin_unmined
                             },
                             "exchangeRate": exchangeRate,
                             "changedRate": changed_rate

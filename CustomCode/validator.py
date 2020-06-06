@@ -10,7 +10,7 @@ def checkmail(email):
         return False
 
 
-re_phone = '[^0]'
+re_phone = '^(-?\d+\.\d+)'
 def checkphone(phone_number):
     if(re.search(phone_number,re_phone)):
         return True 
@@ -18,6 +18,4 @@ def checkphone(phone_number):
         return False
     
 
-a = checkphone('08130103966')
-
-print(a)
+print(checkphone('08130103966'))

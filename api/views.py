@@ -385,7 +385,7 @@ def Dashboard(request,decrypedToken):
                 sum_of_coins_user = minedCoins + unminedCoins
                 percent_of_Usermined_coins = round((minedCoins/(sum_of_coins_user+0.0001))*100)
                 percent_of_Userunmined_coins = round((unminedCoins/(sum_of_coins_user+0.0001))*100)
-                while i < numberOfUsers:
+                while i < len(WasteCoinBoard):
                     topUsers = {
                         "miner_id": WasteCoinBoard[i].minerID,
                         "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 

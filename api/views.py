@@ -379,7 +379,7 @@ def Dashboard(request,decrypedToken):
             total_coin_unmined = 0
             i = 0
             topCoinsMined = []
-            numberOfUsers = 2
+            numberOfUsers = 5
             if decrypedToken['role'] == "user":
                 #Get Percentage user
                 sum_of_coins_user = minedCoins + unminedCoins

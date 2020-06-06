@@ -65,10 +65,12 @@ def user_registration(request):
                                                         amount=0,coin_mined_amount=0,coin_allocated_to=miner_id,transaction="Credit")
                 user_transaction.save()
                 role = User.objects.get(user_id=userRandomId).role
+                validated = otp.objects.get(user__user_id=userRandomId).validated
                 #Generate token
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                 payload = {"user_id": f"{userRandomId}",
                            "role": role,
+                           "validated": validated,
                            "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
                 message = f"Welcome to WasteCoin, your verification code is {code}"
@@ -156,6 +158,7 @@ def resend_otp(request):
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                 payload = {"user_id": f'{user.user_id}',
                                "role": user.role,
+                               "validated": user_data.validated,
                                "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
                 return_data = {
@@ -199,6 +202,7 @@ def user_login(request):
                     timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
                                "role": user_data.role,
+                               "validated": is_verified,
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
                     if is_valid_password and is_verified:
@@ -247,6 +251,7 @@ def user_login(request):
                     #Generate token
                     timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                     payload = {"user_id": f'{user_data.user_id}',
+                               "validated": is_verified,
                                "role": user_data.role,
                                "exp":timeLimit}
                     token = jwt.encode(payload,settings.SECRET_KEY)
@@ -316,8 +321,9 @@ def password_reset(request):
                 sms.sendsms(phone_number[1:],message)
                 timeLimit= datetime.datetime.utcnow() + datetime.timedelta(minutes=1440) #set limit for user
                 payload = {"user_id": f'{user.user_id}',
-                               "role": user.role,
-                               "exp":timeLimit}
+                           "role": user.role,
+                           "validated": user_data.validated,
+                           "exp":timeLimit}
                 token = jwt.encode(payload,settings.SECRET_KEY)
                 return_data = {
                     "error": "0",
@@ -839,24 +845,6 @@ def account_details(request,decryptedToken):
                 "error": "2",
                 "message": "Invalid Parameter"
             }
-    except Exception as e:
-        return_data = {
-            "error": "3",
-            "message": "An error occured"
-        }
-    return Response(return_data)
-
-@api_view(["GET"])
-@autentication.token_required
-def user_verification(request,decryptedToken):
-    try:
-        user_id = decryptedToken['user_id']
-        user_validity = otp.objects.get(user__user_id =user_id).validated
-        return_data = {
-            "error": "0",
-            "message": "successful",
-            "validated": f"{user_validity}"
-        }
     except Exception as e:
         return_data = {
             "error": "3",

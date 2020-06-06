@@ -379,8 +379,12 @@ def Dashboard(request,decrypedToken):
             total_coin_unmined = 0
             i = 0
             topCoinsMined = []
-            numberOfUsers = 5
+            numberOfUsers = 2
             if decrypedToken['role'] == "user":
+                #Get Percentage user
+                sum_of_coins_user = minedCoins + unminedCoins
+                percent_of_Usermined_coins = round((minedCoins/(sum_of_coins_user+0.0001))*100)
+                percent_of_Userunmined_coins = round((unminedCoins/(sum_of_coins_user+0.0001))*100)
                 while i < numberOfUsers:
                     topUsers = {
                         "miner_id": WasteCoinBoard[i].minerID,
@@ -397,9 +401,11 @@ def Dashboard(request,decrypedToken):
                             "month": month,
                             "exchangeRate": exchangeRate,
                             "changedRate": changed_rate,
+                            "totalWasteCoinMined": minedCoins,
+                            "totalWasteCoinUnmined": unminedCoins,
                             "summary": {
-                                "mined": minedCoins,
-                                "unMined": unminedCoins
+                                "mined": percent_of_Usermined_coins,
+                                "unMined": percent_of_Userunmined_coins
                             },
                             "totalWasteCoinMined": minedCoins,
                             "leaderBoard": topCoinsMined
@@ -414,6 +420,10 @@ def Dashboard(request,decrypedToken):
                         total_coin_mined = total_coin_mined + user_mined_coins
                         total_coin_unmined = total_coin_unmined + unminedCoins
                     i +=1
+                #Get Percentage Agent
+                sum_of_coins = total_coin_mined + total_coin_unmined
+                percent_of_mined_coins = round((total_coin_mined/(sum_of_coins+0.0001))*100)
+                percent_of_unmined_coins = round((total_coin_unmined/(sum_of_coins+0.0001))*100)
                 return_data = {
                     "error": "0",
                     "message": "Sucessfull",
@@ -421,9 +431,11 @@ def Dashboard(request,decrypedToken):
                         {
                             "allocatedWasteCoin": user_coins,
                             "month": month,
+                            "totalWasteCoinMined": total_coin_mined,
+                            "totalWasteCoinUnmined": total_coin_unmined,
                             "summary": {
-                                "totalWasteCoinMined": total_coin_mined,
-                                "totalWasteCoinUnMined": total_coin_unmined
+                                "totalWasteCoinMinedPercentage": percent_of_mined_coins,
+                                "totalWasteCoinUnMinedPercentage": percent_of_unmined_coins
                             },
                             "exchangeRate": exchangeRate,
                             "changedRate": changed_rate

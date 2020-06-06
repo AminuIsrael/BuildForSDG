@@ -16,6 +16,3 @@ def checkphone(phone_number):
         return True 
     else:  
         return False
-    
-
-print(checkphone('08130103966'))

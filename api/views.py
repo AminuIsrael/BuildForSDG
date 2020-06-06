@@ -39,7 +39,7 @@ def user_registration(request):
                     "error": "1",
                     "message": "User Exists"
                 }
-            elif validator.checkmail(email) == False or validator.checkphone(phoneNumber)==False:
+            elif validator.checkmail(email) == False or validator.checkphone(phoneNumber)== False:
                 return_data = {
                     "error": "1",
                     "message": "Email or Phone number is not valid"

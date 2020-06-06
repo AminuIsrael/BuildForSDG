@@ -8,3 +8,16 @@ def checkmail(email):
         return True 
     else:  
         return False
+
+
+re_phone = '[^0]'
+def checkphone(phone_number):
+    if(re.search(phone_number,re_phone)):
+        return True 
+    else:  
+        return False
+    
+
+a = checkphone('08130103966')
+
+print(a)

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from api.models import User, UserCoins, UserTrasactionHistory, otp, AccountDetails
 from CustomCode import (autentication, fixed_var, password_functions,
-                        send_email, string_generator, validator,sms)
+                        string_generator, validator,sms)
 from wasteCoin import settings
 
 
@@ -373,19 +373,21 @@ def Dashboard(request,decrypedToken):
             exchangeRate,changed_rate = rate_exchange,rate_changed
             minedCoins = user_data.minedCoins
             unminedCoins = user_coins - minedCoins
-            miner_id = UserCoins.objects.get(user__user_id=user_id).minerID
             WasteCoinBoard = UserCoins.objects.all().order_by('-minedCoins')
+            agent_user_minerid = UserTrasactionHistory.objects.filter(user__user_id=user_id).values('coin_allocated_to').distinct()
+            total_coin_mined = 0
+            total_coin_unmined = 0
             i = 0
             topCoinsMined = []
             numberOfUsers = 5
-            while i < len(WasteCoinBoard):
-                topUsers = {
-                    "miner_id": WasteCoinBoard[i].minerID,
-                    "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 
-                }
-                topCoinsMined.append(topUsers)
-                i += 1
-            if decrypedToken['role'] == "user": 
+            if decrypedToken['role'] == "user":
+                while i < numberOfUsers:
+                    topUsers = {
+                        "miner_id": WasteCoinBoard[i].minerID,
+                        "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 
+                    }
+                    topCoinsMined.append(topUsers)
+                    i += 1
                 return_data = {
                     "error": "0",
                     "message": "Sucessfull",
@@ -404,6 +406,14 @@ def Dashboard(request,decrypedToken):
                     }
             }
             else:
+                while i < len(agent_user_minerid):
+                    miner_id = list(agent_user_minerid)[i]['coin_allocated_to'] 
+                    if miner_id != UserCoins.objects.get(user__user_id=user_id).minerID:
+                        user_mined_coins = UserCoins.objects.get(minerID=miner_id).minedCoins
+                        unminedCoins = UserCoins.objects.get(minerID=miner_id).allocateWasteCoin
+                        total_coin_mined = total_coin_mined + user_mined_coins
+                        total_coin_unmined = total_coin_unmined + unminedCoins
+                    i +=1
                 return_data = {
                     "error": "0",
                     "message": "Sucessfull",
@@ -411,6 +421,10 @@ def Dashboard(request,decrypedToken):
                         {
                             "allocatedWasteCoin": user_coins,
                             "month": month,
+                            "summary": {
+                                "mined": total_coin_mined,
+                                "unmined": total_coin_unmined
+                            },
                             "exchangeRate": exchangeRate,
                             "changedRate": changed_rate
                     }
@@ -545,6 +559,7 @@ def wallet_details(request,decrypedToken):
                 perTransaction = {
                     "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),
                     "amount": transaction_history[i].amount,
+                    "transaction" : transaction_history[i].transaction,
                     "miner_id": transaction_history[i].coin_allocated_to
                 }
                 trasactions.append(perTransaction)

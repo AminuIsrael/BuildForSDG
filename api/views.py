@@ -193,6 +193,7 @@ def user_login(request):
         field = [email_phone,password]
         if not None in field and not '' in field:
             validate_mail = validator.checkmail(email_phone)
+            validate_phone = validator.checkphone(email_phone)
             if validate_mail == True:
                 if User.objects.filter(email =email_phone).exists() == False:
                     return_data = {
@@ -243,7 +244,7 @@ def user_login(request):
                             "error" : "1",
                             "message" : "Wrong Password"
                         }
-            else:
+            elif validate_phone == True:
                 if User.objects.filter(user_phone =email_phone).exists() == False:
                     return_data = {
                         "error": "1",
@@ -293,6 +294,11 @@ def user_login(request):
                             "error" : "1",
                             "message" : "Wrong Password"
                         }
+            else:
+                return_data = {
+                    "error": "2",
+                    "message": "Email or Phone Number is valid"
+                }
         else:
             return_data = {
                 "error" : "2",

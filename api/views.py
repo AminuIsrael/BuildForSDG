@@ -298,7 +298,7 @@ def password_reset(request):
                     "message": "User does not exist"
                 }
             else:
-                user_data = otp.objecttransaction_ids.get(user__user_phone=phone_number)
+                user_data = otp.objects.get(user__user_phone=phone_number)
                 generate_pin = string_generator.alphanumeric(15)
                 user_data.password_reset_code = generate_pin
                 user_data.save()

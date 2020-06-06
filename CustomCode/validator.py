@@ -10,9 +10,9 @@ def checkmail(email):
         return False
 
 
-re_phone = '^(-?\d+\.\d+)'
+re_phone = r'((^090)([23589]))|((^070)([1-9]))|((^080)([2-9]))|((^081)([0-9]))(\d{7})'
 def checkphone(phone_number):
-    if(re.search(phone_number,re_phone)):
-        return True 
+    if(re.search(re_phone, phone_number)):
+        return True
     else:  
         return False

@@ -519,9 +519,9 @@ def user_profile(request,decrypedToken):
                         }
                     ,
                     "user_coins": {
-                        "minerid": f"{UserCoin.minerID}",
-                        "minedcoins": f"{UserCoin.minedCoins}",
-                        "redeemedcoins": f"{UserCoin.redeemedWasteCoin}",
+                        "miner_id": f"{UserCoin.minerID}",
+                        "mined_coins": f"{UserCoin.minedCoins}",
+                        "redeemed_coins": f"{UserCoin.redeemedWasteCoin}",
                         },
                     "account_information": account_details
                     

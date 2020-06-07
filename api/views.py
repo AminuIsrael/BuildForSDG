@@ -297,7 +297,7 @@ def user_login(request):
             else:
                 return_data = {
                     "error": "2",
-                    "message": "Email or Phone Number is valid"
+                    "message": "Email or Phone Number is Invalid"
                 }
         else:
             return_data = {

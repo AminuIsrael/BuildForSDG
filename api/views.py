@@ -563,13 +563,12 @@ def user_profile(request,decrypedToken):
 def wallet_details(request,decrypedToken):
     try:
         userID = decrypedToken['user_id']
-        user_coins = UserCoins.objects.get(user__user_id=userID)
-        agent_coins = AgentCoins.objects.get(agent__user_id=userID)
         transaction_history = UserTrasactionHistory.objects.filter(user__user_id=userID)
         numOfTransactions = len(transaction_history)
         trasactions = []
         if decrypedToken["role"] == "user":
             i = 0
+            user_coins = UserCoins.objects.get(user__user_id=userID)
             while i < numOfTransactions:
                 perTransaction = {
                     "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),
@@ -588,6 +587,7 @@ def wallet_details(request,decrypedToken):
             }
         else:
             i = 0
+            agent_coins = AgentCoins.objects.get(agent__user_id=userID)
             while i < numOfTransactions:
                 perTransaction = {
                     "date": transaction_history[i].date_added.strftime("%Y-%m-%d"),

@@ -1,4 +1,4 @@
-# For constant variable
+# For constant variables
 
 #Exhange Rate
 exchange_rate = 19.5
@@ -7,3 +7,4 @@ exchange_rate = 19.5
 changed_rate = 20.0
 
 #WasteCoin CoinBunker
+backallocation = 70000

@@ -717,7 +717,8 @@ def allocate_coins(request,decrypedToken):
                     allocate.save()
                     return_data = {
                         "error": "0",
-                        "message": f"Successful,coins allocated to {user.firstname} {user.lastname}"
+                        "message": f"Successful,coins allocated to {user.firstname} {user.lastname}",
+                        "current_balance": f"{remaining_coins}"
                     }
         else:
             return_data = {

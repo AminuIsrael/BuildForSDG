@@ -411,9 +411,9 @@ def Dashboard(request,decrypedToken):
             percent_of_Userunmined_coins = round((total_unminedCoins/(total_wastecoin))*100)
             WasteCoinBoard = UserTrasactionHistory.objects.filter(transaction='Credit').distinct('amount').order_by('-amount')
             i = 0
-            numberOfUsers = 5
+            numberOfUsers = 7
             topCoinsMined = []
-            while i < len(WasteCoinBoard):
+            while i < numberOfUsers:
                 topUsers = {
                     "miner_id": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minerID,
                     "CoinMined": WasteCoinBoard[i].amount

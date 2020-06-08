@@ -654,7 +654,7 @@ def redeemcoins(request,decrypedToken):
                     #Add coin to the coin repository
                     return_data = {
                         "error": "0",
-                        "message": "Successful, Coin Mined",
+                        "message": "Successfully redeemed coins",
                         "transaction_id": f"{transactionid}",
                         "amount": f"{toNaira}"
                     }

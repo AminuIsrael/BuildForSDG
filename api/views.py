@@ -400,7 +400,7 @@ def Dashboard(request,decrypedToken):
     try:
         user_id = decrypedToken['user_id']
         if user_id != None and user_id != '':
-            total_wastecoin = fixed_var.backawllocation
+            total_wastecoin = fixed_var.backallocation
             rate_exchange = fixed_var.exchange_rate
             rate_changed = fixed_var.changed_rate
             month = datetime.datetime.now().strftime('%B')

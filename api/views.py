@@ -530,8 +530,8 @@ def user_profile(request,decrypedToken):
                 }
         else:
             UserInfo = User.objects.get(user_id=userID)
-            agent_miner_id = UserCoin.objects.get(user__user_id=userID).minerID
             AgentCoin = AgentCoins.objects.get(agent__user_id=userID)
+            agent_miner_id = UserCoins.objects.get(user__user_id=userID).minerID
             return_data = {
                 "error": "0",
                 "message": "Successfull",

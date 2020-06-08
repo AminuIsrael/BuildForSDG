@@ -47,11 +47,20 @@ class AgentCoins(models.Model):
     
 class UserTrasactionHistory(models.Model):
     class Meta:
-        db_table = "Transaction_History"
+        db_table = "User_Transaction_History"
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id = models.TextField(verbose_name="trans_id",unique=True)
     amount = models.FloatField(verbose_name="CoinAmount")
     coin_redeemed_amount = models.FloatField(verbose_name="CoinunminedAmount",default=0)
+    transaction = models.TextField(max_length=10,verbose_name="Transactions")
+    date_added = models.DateTimeField(default=timezone.now)
+
+class AgentTransactionHistory(models.Model):
+    class Meta:
+        db_table = "Agent_Transaction_History"
+    agent = models.ForeignKey(User,on_delete=models.CASCADE)
+    transaction_id = models.TextField(verbose_name="trans_id",unique=True)
+    amount = models.FloatField(verbose_name="CoinAmount")
     coin_allocated_to = models.TextField(verbose_name="Miner_ID",default=0)
     transaction = models.TextField(max_length=10,verbose_name="Transactions")
     date_added = models.DateTimeField(default=timezone.now)

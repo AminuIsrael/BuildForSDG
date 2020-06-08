@@ -1,13 +1,14 @@
 import datetime
 
 import jwt
+from django.db.models import Sum
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.models import User, UserCoins, UserTrasactionHistory, otp, AccountDetails, AgentCoins
-from django.db.models import Sum
-from CustomCode import (autentication, fixed_var, password_functions,
-                        string_generator, validator,sms)
+from api.models import (AccountDetails, AgentCoins, AgentTransactionHistory,
+                        User, UserCoins, UserTrasactionHistory, otp)
+from CustomCode import (autentication, fixed_var, password_functions, sms,
+                        string_generator, validator)
 from wasteCoin import settings
 
 
@@ -68,7 +69,7 @@ def user_registration(request):
                 user_Coins.save()
                 #Save Transaction Details
                 user_transaction = UserTrasactionHistory(user=new_userData,transaction_id=transactionid,
-                                                        amount=0,coin_redeemed_amount=0,coin_allocated_to=miner_id,transaction="Credit")
+                                                        amount=0,coin_redeemed_amount=0,transaction="Credit")
                 user_transaction.save()
                 role = User.objects.get(user_id=userRandomId).role
                 validated = otp.objects.get(user__user_id=userRandomId).validated
@@ -403,7 +404,7 @@ def Dashboard(request,decrypedToken):
             rate_exchange = fixed_var.exchange_rate
             rate_changed = fixed_var.changed_rate
             month = datetime.datetime.now().strftime('%B')
-            total_minedCoins = UserCoins.objects.aggregate(Sum('minedCoins'))['minedCoins__sum']
+            total_minedCoins = UserTrasactionHistory.objects.filter(transaction="Credit").aggregate(Sum('amount'))['amount__sum']
             total_unminedCoins = total_wastecoin - total_minedCoins
             #Get Percentage
             percent_of_Usermined_coins = round((total_minedCoins/(total_wastecoin))*100)
@@ -546,7 +547,7 @@ def user_profile(request,decrypedToken):
                     "country": f"{UserInfo.user_country}",
                     "role": f"{UserInfo.role}"
                     },
-                    "agent_coins": f"{UserCoin.minedCoins}",
+                    "agent_coins": f"{AgentCoin.agentCoins}",
                     "account_information": account_details
                     
                     }
@@ -563,11 +564,11 @@ def user_profile(request,decrypedToken):
 def wallet_details(request,decrypedToken):
     try:
         userID = decrypedToken['user_id']
-        transaction_history = UserTrasactionHistory.objects.filter(user__user_id=userID)
-        numOfTransactions = len(transaction_history)
         trasactions = []
         if decrypedToken["role"] == "user":
             i = 0
+            transaction_history = UserTrasactionHistory.objects.filter(user__user_id=userID)
+            numOfTransactions = len(transaction_history)
             user_coins = UserCoins.objects.get(user__user_id=userID)
             while i < numOfTransactions:
                 perTransaction = {
@@ -582,11 +583,13 @@ def wallet_details(request,decrypedToken):
                 "message": "Successfull",
                 "data": {
                     "current_balance": f"{user_coins.minedCoins}",
-                    "transaction_history": trasactions[1:]  
+                    "transaction_history": trasactions[1:][::-1]  
                 }
             }
         else:
             i = 0
+            transaction_history = AgentTransactionHistory.objects.filter(agent__user_id=userID)
+            numOfTransactions = len(transaction_history)
             agent_coins = AgentCoins.objects.get(agent__user_id=userID)
             while i < numOfTransactions:
                 perTransaction = {
@@ -602,7 +605,7 @@ def wallet_details(request,decrypedToken):
                 "message": "Successfull",
                 "data": {
                     "current_balance": f"{agent_coins.agentCoins}",
-                    "transaction_history": trasactions[1:]
+                    "transaction_history": trasactions[::-1]
                 }
             }
     except Exception as e:
@@ -642,8 +645,7 @@ def redeemcoins(request,decrypedToken):
                     user_coins.save()
                     #Save Transaction
                     transaction = UserTrasactionHistory(user=user_data,transaction_id=transactionid,
-                                                        amount=coins_amount,coin_redeemed_amount=toNaira,
-                                                        coin_allocated_to=user_coins.minerID,transaction="Debit")
+                                                        amount=coins_amount,coin_redeemed_amount=toNaira,transaction="Debit")
                     transaction.save()
                     #Add coin to the coin repository
                     return_data = {
@@ -704,15 +706,15 @@ def allocate_coins(request,decrypedToken):
                     remaining_coins =agent_coins.agentCoins - coins_allocated
                     agent_coins.agentCoins = remaining_coins
                     #Debit_agent
-                    withdrawl= UserTrasactionHistory(user=agent_user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
-                                                     coin_redeemed_amount=0,coin_allocated_to=user_MinerID,transaction="Debit")
+                    withdrawl= AgentTransactionHistory(agent=agent_user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
+                                                       coin_allocated_to=user_MinerID,transaction="Debit")
                     agent_coins.save()
                     withdrawl.save()
                     #credit User
                     add_coins = user_coins.minedCoins + coins_allocated
                     user_coins.minedCoins = add_coins
-                    allocate = UserTrasactionHistory(user=user,transaction_id=string_generator.alphanumeric(15),amount=coins_allocated,
-                                                     coin_redeemed_amount=0,coin_allocated_to=user_MinerID,transaction="Credit")
+                    allocate = UserTrasactionHistory(user=user,transaction_id=string_generator.alphanumeric(15),
+                                                     amount=coins_allocated,transaction="Credit")
                     user_coins.save()
                     allocate.save()
                     return_data = {

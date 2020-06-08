@@ -230,10 +230,10 @@ def user_login(request):
                                     "state": f"{user_data.user_state}",
                                     "LGA": f"{user_data.user_LGA}",
                                     "country": f"{user_data.user_country}"
-                                    
+
                                 }
                             ]
-                            
+
                         }
                     elif is_verified == False:
                         return_data = {
@@ -280,10 +280,10 @@ def user_login(request):
                                     "state": f"{user_data.user_state}",
                                     "LGA": f"{user_data.user_LGA}",
                                     "country": f"{user_data.user_country}"
-                                    
+
                                 }
                             ]
-                            
+
                         }
                     elif is_verified == False:
                         return_data = {
@@ -416,14 +416,14 @@ def Dashboard(request,decrypedToken):
             while i < len(WasteCoinBoard):
                 topUsers = {
                     "miner_id": WasteCoinBoard[i].minerID,
-                    "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 
+                    "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins
                     }
                 topCoinsMined.append(topUsers)
                 i += 1
                 return_data = {
                     "error": "0",
                     "message": "Sucessfull",
-                    "data": 
+                    "data":
                         {
                             "allocatedWasteCoin": total_wastecoin,
                             "month": month,
@@ -442,7 +442,7 @@ def Dashboard(request,decrypedToken):
             return_data = {
                 "error": "2",
                 "message": "Invalid Parameter"
-            } 
+            }
     except Exception as e:
         return_data = {
             "error": "3",
@@ -461,7 +461,7 @@ def LeadBoard(request):
         while i < len(WasteCoinBoard):
             topUsers = {
                 "miner_id": WasteCoinBoard[i].minerID,
-                "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins 
+                "CoinMined": UserCoins.objects.get(user__user_id=WasteCoinBoard[i].user.user_id).minedCoins
             }
             topCoinsMined.append(topUsers)
             i += 1
@@ -484,10 +484,10 @@ def user_profile(request,decrypedToken):
         userID = decrypedToken['user_id']
         UserInfo = User.objects.get(user_id=userID)
         UserCoin = UserCoins.objects.get(user__user_id=userID)
-        #verify if user have account 
+        #verify if user have account
         account_info = AccountDetails.objects.filter(user__user_id=decrypedToken['user_id']).exists()
         if account_info == True:
-            account = AccountDetails.objects.get(user__user_id=decrypedToken['user_id']) 
+            account = AccountDetails.objects.get(user__user_id=decrypedToken['user_id'])
             account_details = {
                 "account_name": account.account_name,
                 "account_number": account.account_number,
@@ -525,9 +525,9 @@ def user_profile(request,decrypedToken):
                         "redeemed_coins": f"{UserCoin.redeemedWasteCoin}",
                         },
                     "account_information": account_details
-                    
+
                     }
-                }  
+                }
         else:
             UserInfo = User.objects.get(user_id=userID)
             AgentCoin = AgentCoins.objects.get(agent__user_id=userID)
@@ -549,9 +549,9 @@ def user_profile(request,decrypedToken):
                     },
                     "agent_coins": f"{AgentCoin.agentCoins}",
                     "account_information": account_details
-                    
+
                     }
-                } 
+                }
     except Exception as e:
         return_data = {
             "error": "3",
@@ -583,7 +583,7 @@ def wallet_details(request,decrypedToken):
                 "message": "Successfull",
                 "data": {
                     "current_balance": f"{user_coins.minedCoins}",
-                    "transaction_history": trasactions[1:][::-1]  
+                    "transaction_history": trasactions[1:][::-1]
                 }
             }
         else:
@@ -664,10 +664,10 @@ def redeemcoins(request,decrypedToken):
             "error": "3",
             "message": str(e)
         }
-    return Response(return_data)    
-                
-                
-                
+    return Response(return_data)
+
+
+
 @api_view(["POST"])
 @autentication.token_required
 def allocate_coins(request,decrypedToken):
@@ -680,13 +680,13 @@ def allocate_coins(request,decrypedToken):
                 return_data = {
                     "error": "1",
                     "message": "User does not exist"
-                    
+
                     }
             elif User.objects.get(user_id= decrypedToken['user_id']).role != "agent":
                 return_data = {
                     "error": "2",
                     "message": "Unauthorized User"
-                    
+
                     }
             else:
                 agent_coins = AgentCoins.objects.get(agent__user_id=decrypedToken["user_id"]).agentCoins
@@ -758,7 +758,7 @@ def changepassword(request,decryptedToken):
                 return_data = {
                     "error": "0",
                     "message": "Successfull, Password Changed"
-                }   
+                }
     except Exception as e:
         return_data = {
                 "error": "3",
@@ -840,7 +840,7 @@ def account_details(request,decryptedToken):
                         "bank_name": bankName
                     }
                 }
-        else:   
+        else:
             return_data = {
                 "error": "2",
                 "message": "Invalid Parameter"

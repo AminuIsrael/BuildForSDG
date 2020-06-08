@@ -677,6 +677,8 @@ def redeemcoins(request,decrypedToken):
 def allocate_coins(request,decrypedToken):
     try:
         coins_allocated = float(request.data.get("coins_allocated",None))
+        total_coins_mined = UserTrasactionHistory.objects.filter(transaction="Credit").aggregate(Sum('amount'))['amount__sum']
+        monthly_allocation = fixed_var.backallocation
         user_MinerID = request.data.get("miner_id",None)
         field = [coins_allocated,user_MinerID]
         if not None in field and not "" in field:
@@ -698,6 +700,11 @@ def allocate_coins(request,decrypedToken):
                     return_data = {
                         "error": "2",
                         "message": "Not enough coins"
+                    }
+                elif total_coins_mined >= monthly_allocation:
+                    return_data = {
+                        "error": "2",
+                        "message": "Maximum monthly allocation reached"
                     }
                 else:
                     wastecoin_user = UserCoins.objects.get(minerID=user_MinerID)

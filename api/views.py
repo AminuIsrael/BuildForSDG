@@ -400,7 +400,7 @@ def Dashboard(request,decrypedToken):
     try:
         user_id = decrypedToken['user_id']
         if user_id != None and user_id != '':
-            total_wastecoin = fixed_var.backallocation
+            total_wastecoin = fixed_var.backawllocation
             rate_exchange = fixed_var.exchange_rate
             rate_changed = fixed_var.changed_rate
             month = datetime.datetime.now().strftime('%B')
@@ -530,6 +530,7 @@ def user_profile(request,decrypedToken):
                 }
         else:
             UserInfo = User.objects.get(user_id=userID)
+            agent_miner_id = UserCoin.objects.get(user__user_id=userID).minerID
             AgentCoin = AgentCoins.objects.get(agent__user_id=userID)
             return_data = {
                 "error": "0",
@@ -547,7 +548,10 @@ def user_profile(request,decrypedToken):
                     "country": f"{UserInfo.user_country}",
                     "role": f"{UserInfo.role}"
                     },
-                    "agent_coins": f"{AgentCoin.agentCoins}",
+                    "user_coins": {
+                        "miner_id": f"{agent_miner_id}",
+                        "mined_coins": f"{AgentCoin.agentCoins}",
+                        },
                     "account_information": account_details
 
                     }

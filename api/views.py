@@ -13,13 +13,14 @@ from wasteCoin import settings
 
 
 # Create your views here.
-@api_view(['GET'])
+@api_view(["GET"])
 def index_page(request):
     return_data = {
         "error" : "0",
-        "message" : "Successful"
+        "message" : "Successful",
+        "user_ip" : f"{request.META.get('REMOTE_ADDR', None)} {request.META.get('HTTP_USER_AGENT', '')}"
     }
-    return Response(return_data)
+    return Response(return_data) 
 
 @api_view(["POST"])
 def user_registration(request):

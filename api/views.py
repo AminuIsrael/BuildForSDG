@@ -112,10 +112,7 @@ def user_verification(request,decrypedToken):
             otpCode,date_added = user_data.otp_code,user_data.date_added
             date_now = datetime.datetime.now(datetime.timezone.utc)
             duration = float((date_now - date_added).total_seconds())
-            timeLimit = 18000.0 
-            print(duration < timeLimit)
-            print(duration)
-            print(timeLimit)
+            timeLimit = 18000.0
             if otp_entered == otpCode and duration < timeLimit:
                 #validate user
                 user_data.validated = True

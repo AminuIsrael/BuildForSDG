@@ -5,8 +5,8 @@ import smtplib
 def send_email(subject,email_address,messageToSend):
     msg = MIMEMultipart()
     message = messageToSend
-    password = "Am1nuIsr2"
-    msg['From'] = "aminuisrael90@gmail.com"
+    password = ""
+    msg['From'] = ""
     msg['To'] = email_address
     msg['Subject'] = subject
 
